@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Design Document: VR/Physical Surrogate Robot Infrastructure</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --border-color: #30363d;
+            --text-color: #c9d1d9;
+            --text-dim: #8b949e;
+            --accent-color: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.1);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #ffffff;
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 15px;
+        }
+        .meta-item strong {
+            color: var(--text-color);
+        }
+        h2 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h3 {
+            color: var(--accent-color);
+            font-size: 1.15rem;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        p, li {
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+        ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.95rem;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: rgba(48, 54, 61, 0.5);
+            color: #ffffff;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: rgba(30, 35, 41, 0.2);
+        }
+        .diagram-container {
+            background: #090d13;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.85rem;
+            color: #58a6ff;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 20px 0;
+        }
+        .footnote {
+            margin-top: 60px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 20px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Engineering Design Document (EDD)</h1>
+        <div style="color: var(--accent-color); font-weight: 600; font-size: 1.2rem; margin-bottom: 15px;">
+            VR/Physical Surrogate Robot Infrastructure Framework
+        </div>
+        <div class="meta-grid">
+            <div class="meta-item"><strong>Date:</strong> August 21, 2026</div>
+            <div class="meta-item"><strong>System Archetype:</strong> Stationary Placing Rig</div>
+            <div class="meta-item"><strong>Core Platform:</strong> Linux Mint Cinnamon</div>
+            <div class="meta-item"><strong>Virtual Integration:</strong> VRChat SDK Manual Stack</div>
+        </div>
+    </header>
+
+    <section>
+        <h2>1. Executive Summary</h2>
+        <p>This design specification formalizes the physical layer and power distribution topology for a high-fidelity, 6-foot physical surrogate shell and real-time VR companion platform. Operating within a stationary placing rig infrastructure, the framework bridges high-density sensory arrays with an internal, liquid-cooled processing core running localized logic and the VRChat SDK manual pipeline. By offloading computational data routing and structural link pathways into a standalone physical matrix, this architecture achieves sub-millisecond serialization speeds while isolating delicate compute engines from kinetic, magnetic, and thermal stresses.</p>
+    </section>
+
+    <section>
+        <h2>2. Nervous System Emulation (Cat-8 Array)</h2>
+        <p>The surrogate hardware's nervous system relies on Category 8 (Cat-8) copper topology configured exclusively for high-frequency 40GBASE-T deployments. The implementation maps data transmission profiles directly against sub-millisecond sensory demands.</p>
+        <ul>
+            <li><strong>Throughput & Frequency Boundary:</strong> Delivers an operational ceiling of 40 Gbps at a maximum internal bus width of 2,000 MHz (2 GHz), matching micro-sensory capture speeds.</li>
+            <li><strong>Latency Control:</strong> Eliminates network-level packet serialization delays, validating high-precision spatial tracking, facial sync, and localized haptic telemetry arrays without queue buffer interference.</li>
+            <li><strong>Electromagnetic Interference Isolation:</strong> Utilizes strict Shielded with Foiled Twisted Pair (S/FTP) construction, where individual wire pairs are wrapped in foil and encapsulated by an overall outer braided sleeve. This prevents data packet corruption from adjacent liquid-cooling pumps and high-draw hardware logic.</li>
+            <li><strong>Geometric Distance Containment:</strong> All internal line distances are locked under a structural limit of 30 meters (98 feet) to enforce full 40 Gbps operation and avoid down-negotiation to 10 Gbps.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>3. Centralized Patch Panel Layout</h2>
+        <p>To preserve space within the upper chassis chambers and protect internal components from structural cable strain, all sensory connections are marshaled through a grounded, high-density 12-port mini-patch panel situated inside the lower structural base frame.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Port ID</th>
+                    <th>Subsystem Node</th>
+                    <th>Sensor/Interface Array Type</th>
+                    <th>Data Protocol</th>
+                    <th>Power Profile</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>01 - 02</td>
+                    <td>Head & Sensory Node</td>
+                    <td>High-Definition Face-Tracking Cameras & Spatial Microphones</td>
+                    <td>40GBASE-T</td>
+                    <td>PoE++ Type 4 (&le;30W)</td>
+                </tr>
+                <tr>
+                    <td>03 - 06</td>
+                    <td>Upper Torso & Kinetic</td>
+                    <td>Localized Haptic Feedback Arrays & Expression Servo Controllers</td>
+                    <td>40GBASE-T</td>
+                    <td>PoE++ Type 4 (Up to 90W)</td>
+                </tr>
+                <tr>
+                    <td>07 - 08</td>
+                    <td>Lower Base & Rig</td>
+                    <td>Placing Rig Alignment Encoders & Frame Security Interlocks</td>
+                    <td>40GBASE-T</td>
+                    <td>PoE++ Type 4 (&le;15W)</td>
+                </tr>
+                <tr>
+                    <td>09 - 10</td>
+                    <td>Environmental Matrix</td>
+                    <td>Liquid-Cooling Thermal Telemetry & Lung-Style Intake Fans</td>
+                    <td>40GBASE-T</td>
+                    <td>PoE++ Type 4 (Up to 90W)</td>
+                </tr>
+                <tr>
+                    <td>11 - 12</td>
+                    <td>External Umbilical</td>
+                    <td>High-Speed Remote Uplink to Dedicated Workstation Hub</td>
+                    <td>40GBASE-T</td>
+                    <td>Unpowered (Data Only)</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>4. 3D-Printed Mini-Chassis Integration</h2>
+        <p>The 10-inch form factor mini-patch panel is housed within a custom-fabricated enclosure integrated structurally into the lower base frame, tailored for standard 3D-printing tolerances.</p>
+        <ul>
+            <li><strong>Slide-Out Rail Track:</strong> Fabricated with an integrated dual-lip slide track allowing the patch core to slide completely outward, granting toolless access to rear keystone terminators for rapid maintenance.</li>
+            <li><strong>Hexagonal Ventilation Grids:</strong> Built utilizing an algorithmic, non-deforming hexagonal lattice across the back wall. This optimizes plastic weight distribution and exhausts heat dissipated by active 40GBASE-T network interface hardware.</li>
+            <li><strong>Electrostatic Discharge (ESD) Grounding:</strong> The plastic bracket integrates an internal metal backing bar bonded directly to a 10AWG heavy copper drain wire. This safely routes static charges—built up by external shell materials or fluid pumps—straight to standard earth ground, protecting the internal i5 core and graphics processors.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>5. PoE++ Power Delivery Protocol (IEEE 802.3bt)</h2>
+        <p>To streamline interior routing and avoid massive parallel DC wiring looms, power delivery is layered entirely over the Cat-8 data lines using the IEEE 802.3bt (PoE++ Type 4) standard.</p>
+        
+        <div class="diagram-container">
+[PoE++ Injector / Switch in Base] ---- (90W Power + 40 Gbps Data over S/FTP Cat-8) ----> [Shielded Keystone]
+                                                                                               |
+                                                                                [Localized Terminal Splitter]
+                                                                                   /                       \
+                                                              (40 Gbps Raw Data to Node)       (DC Power to Actuators)
+        </div>
+
+        <ul>
+            <li><strong>Kinetic Servo Drive Isolation:</strong> High-draw expression and gesturing servos receive localized 90W power slices, isolating inducting voltage feedback and motor spikes away from the main PC power supply lines.</li>
+            <li><strong>Environmental Loop Decoupling:</strong> Localized liquid-cooling pumps and active air-circulation intake elements run natively on independent PoE++ rails, maintaining thermal containment even during primary system restarts.</li>
+            <li><strong>Drop-Down Voltage Regulation:</strong> Nodes use compact hardware splitters to drop the structural PoE line voltage down to regulated, clean 5V and 12V rails directly at the target sensory zones.</li>
+        </ul>
+    </section>
+
+    <div class="footnote">
+        Engineering Design Document • Project Nervous System Emulation • Confidential Source Asset
+    </div>
+</div>
+
+</body>
+</html>
