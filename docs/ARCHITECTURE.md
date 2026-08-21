@@ -88,6 +88,26 @@ a `validate()` so the health check covers it automatically.
 Pure unit tests under `tests/`. Run `make test`. CI exercises Python
 3.10–3.12 with `ruff` + `black` + `pytest`.
 
+## Rust core (dual-language)
+
+The same control plane is implemented in Rust under [`rust/`](../rust/) as
+`new-body-core` (library) + `new-body-rs` (CLI). The module split mirrors the
+Python package (`cat8`, `patch_panel`, `poe`, `chassis`, `surrogate`,
+`render`), and uses the identical extension model (registry + builder).
+
+Why two languages:
+
+- **Python** — the primary, dependency-free API and CLI for R&D scripting.
+- **Rust** — a high-performance core for hot-path work (bulk telemetry
+  aggregation, simulation loops) and a `new-body-rs` standalone CLI.
+- **PyO3 bridge** — `rust/pyext` compiles to `_new_body_rust`; the Python shim
+  `new_body/_rust.py` exposes `RustSurrogate` with the same surface as
+  `new_body.surrogate.Surrogate`, falling back gracefully when the extension
+  isn't built (`RUST_AVAILABLE`).
+
+When you change an extension point, update **both** implementations and keep
+their tests in parity.
+
 ## Roadmap (suggested)
 
 - Simulated link congestion / packet-loss model in `Cat8Link`.

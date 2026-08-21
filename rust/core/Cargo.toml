@@ -1,0 +1,9 @@
+[package]
+name = "new-body-core"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Rust core engine for the New Body VR/Physical Surrogate Robot infrastructure"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }

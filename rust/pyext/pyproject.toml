@@ -1,0 +1,9 @@
+[build-system]
+requires = ["maturin>=1.0"]
+build-backend = "maturin"
+
+[project]
+name = "new-body-rust"
+requires-python = ">=3.10"
+description = "Rust-accelerated backend for the New Body control plane"
+license = { text = "MIT" }

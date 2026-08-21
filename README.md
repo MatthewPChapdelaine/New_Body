@@ -14,10 +14,15 @@ and validates the four pillars of the design:
 
 | Section | Module | What it models |
 | --- | --- | --- |
-| 2. Nervous System Emulation | `cat8` | Cat-8 S/FTP 40GBASE-T links, sub-ms serialization, EMI isolation, 30 m geometric limit |
+| 2. Nervous System Emulation | `cat8` | Cat-8 S/FTP 40GBASE-T links, sub-ms serialization, EMI isolation, 30 m limit |
 | 3. Patch Panel | `patch_panel` | 12-port grounded mini-panel mapping subsystem nodes to ports |
 | 4. Mini-Chassis | `chassis` | 3D-printed enclosure, slide-out rail, hex ventilation, ESD drain |
 | 5. PoE++ Delivery | `poe` | IEEE 802.3bt Type 4 (90 W) power-over-data, splitter rails |
+
+> **Rust core:** the same control plane is implemented in Rust under
+> [`rust/`](rust/) (`new-body-core` library + `new-body-rs` CLI), with an
+> optional PyO3 extension exposing it to Python. See
+> [`rust/README.md`](rust/README.md).
 
 ## Layout
 
@@ -79,5 +84,20 @@ make test          # run the suite
 make lint          # ruff + black
 ```
 
-CI runs `ruff`, `black`, and `pytest` on Python 3.10–3.12.
+CI runs `ruff`, `black`, and `pytest` on Python 3.10–3.12, plus `cargo test`,
+`clippy`, and `rustfmt` on the Rust workspace.
+
+### Rust core
+
+```bash
+cargo test --manifest-path rust/Cargo.toml          # library + CLI tests
+cargo run  --manifest-path rust/cli/Cargo.toml --bin new-body-rs -- status
+```
+
+Optional Python acceleration via PyO3 (see [`rust/README.md`](rust/README.md)):
+
+```bash
+cd rust/pyext && maturin develop
+python -c "from new_body._rust import RustSurrogate, RUST_AVAILABLE; print(RUST_AVAILABLE)"
+```
 

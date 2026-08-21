@@ -1,0 +1,19 @@
+[package]
+name = "new-body-rust"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "PyO3 binding exposing the New Body Rust core to Python"
+
+[lib]
+name = "_new_body_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+new-body-core = { path = "../core" }
+pyo3 = { version = "0.22", features = ["extension-module"] }
+serde_json = "1"
+
+# Decouple from the main `rust/` workspace so `cargo test` on the core
+# workspace never pulls in Python/PyO3.
+[workspace]

@@ -1,0 +1,14 @@
+[package]
+name = "new-body-rs"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Rust CLI for the New Body surrogate control plane"
+
+[[bin]]
+name = "new-body-rs"
+path = "src/main.rs"
+
+[dependencies]
+new-body-core = { path = "../core" }
+clap = { version = "4", features = ["derive"] }
