@@ -59,3 +59,68 @@ def test_surrogate_factory_default_healthy():
     s = Surrogate.factory_default()
     assert s.is_healthy()
     assert s.telemetry()["ports"] == 12
+
+
+def test_register_subsystem_appends_node():
+    from new_body.cat8 import Cat8Link
+    from new_body.patch_panel import (
+        PatchPanel,
+        SubsystemSpec,
+        clear_registry,
+        register_subsystem,
+        seed_base_registry,
+    )
+
+    clear_registry()
+    try:
+        register_subsystem(
+            SubsystemSpec(
+                "R&D Lidar Array",
+                "Solid-State Lidar + IMU",
+                "40GBASE-T",
+                "PoE++ Type 4 (Up to 90W)",
+                (13, 14),
+            )
+        )
+        panel = PatchPanel.default_layout(lambda pid: Cat8Link(f"cat8-{pid:02d}", 3.0))
+        assert "R&D Lidar Array" in panel.subsystems()
+        assert len(panel.ports) == 2
+    finally:
+        seed_base_registry()
+
+
+def test_register_subsystem_rejects_overlap():
+    import pytest
+
+    from new_body.patch_panel import (
+        SubsystemSpec,
+        clear_registry,
+        register_subsystem,
+        seed_base_registry,
+    )
+
+    clear_registry()
+    try:
+        register_subsystem(
+            SubsystemSpec("A", "iface", "40GBASE-T", "PoE++ Type 4 (90W)", (13, 16))
+        )
+        with pytest.raises(ValueError):
+            register_subsystem(
+                SubsystemSpec("B", "iface", "40GBASE-T", "PoE++ Type 4 (90W)", (15, 18))
+            )
+    finally:
+        seed_base_registry()
+
+
+def test_patch_panel_builder_bespoke_layout():
+    from new_body.cat8 import Cat8Link
+    from new_body.patch_panel import PatchPanelBuilder, SubsystemSpec
+
+    panel = (
+        PatchPanelBuilder()
+        .add(SubsystemSpec("X", "i", "40GBASE-T", "PoE++ Type 4 (90W)", (2, 2)))
+        .add(SubsystemSpec("Y", "i", "40GBASE-T", "Unpowered", (5, 6)))
+        .build(lambda pid: Cat8Link(f"c{pid}", 2.0))
+    )
+    assert [p.port_id for p in panel.ports] == [2, 5, 6]
+    assert panel.subsystems() == ["X", "Y"]

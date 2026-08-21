@@ -57,7 +57,7 @@ class PoeDelivery:
         data = "(40 Gbps Raw Data to Node)"
         power = "(DC Power to Actuators)"
         lines = [
-            f"[{self.source}] ---- (90W Power + 40 Gbps Data over S/FTP Cat-8) ----> [Shielded Keystone]",
+            f"[{self.source}] ---- (90W Power + 40 Gbps Data over S/FTP Cat-8) ----> [Shielded Keystone]",  # noqa: E501
             " " * 78 + "|",
             " " * 70 + splitter,
             " " * 70 + "/" + " " * 23 + "\\",

@@ -64,3 +64,20 @@ print(s.health_check())   # [] when nominal
 ```bash
 pytest
 ```
+
+## Contributing
+
+New Body is built for **Research & Development entities** to extend. Add sensor
+suites, power topologies, or chassis variants without touching core code via the
+subsystem registry — see [`CONTRIBUTING.md`](CONTRIBUTING.md),
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and
+[`examples/add_research_subsystem.py`](examples/add_research_subsystem.py).
+
+```bash
+make install-dev   # package + pytest, ruff, black
+make test          # run the suite
+make lint          # ruff + black
+```
+
+CI runs `ruff`, `black`, and `pytest` on Python 3.10–3.12.
+

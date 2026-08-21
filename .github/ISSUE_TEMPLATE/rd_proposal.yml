@@ -1,0 +1,34 @@
+name: R&D Proposal
+description: Propose a new sensor class, power topology, or simulation hook to contribute
+labels: ["rd-proposal"]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Research motivation
+      description: What experiment or capability drives this proposal?
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Contribution type
+      options:
+        - New subsystem / sensor suite
+        - Power delivery topology change
+        - Chassis / form-factor variant
+        - Telemetry / instrumentation hook
+        - Tooling / CI
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Proposed design
+      description: Which module(s) change, new extension points, API sketch.
+      render: python
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation plan
+      description: How will this be tested? New unit tests, sim harness, hardware?
