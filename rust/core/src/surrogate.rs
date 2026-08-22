@@ -102,6 +102,7 @@ mod tests {
 
     #[test]
     fn factory_default_healthy() {
+        let _guard = crate::patch_panel::REGISTRY_TEST_LOCK.lock().unwrap();
         let s = Surrogate::factory_default("Surrogate-01");
         assert!(s.is_healthy());
         assert_eq!(s.telemetry().ports, 12);

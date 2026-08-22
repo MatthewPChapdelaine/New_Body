@@ -39,6 +39,30 @@ topologies, and chassis variants without forking core logic.
   ESD drain-to-earth.
 - **`Surrogate`** — the orchestrator. `factory_default()` builds the canonical
   rig; `health_check()` aggregates validation across all layers.
+- **`HumanTwin`** (`body.py` / `body.rs`) — a structural digital twin of the
+  full human body and mind. `factory_default()` wraps a `Surrogate`, wires 11
+  body systems (15 organs) and 10 cognitive modules onto Cat-8 links starting at
+  port 13, and exposes `validate()` / `is_healthy()` / `telemetry()` /
+  `emit_frames()` (raw `PROTO_BIOMETRIC` / `PROTO_COGNITIVE` frames).
+
+## Human body & mind digital twin
+
+`new_body.body` lifts the surrogate control plane into an anatomical + cognitive
+model. It is a *structural* twin (ontology + state + telemetry + validation +
+raw-binary serialization), not a real-time physiological simulation.
+
+- 11 body systems (`BodySystemId`): integumentary, skeletal, muscular, nervous,
+  endocrine, cardiovascular, lymphatic, respiratory, digestive, urinary,
+  reproductive. Each organ carries biometrics (`Vital`) with clinical ranges.
+- 10 mind modules (`MindModuleId`): perception, attention, memory, learning,
+  emotion, executive, language, motor, consciousness, social — each linked to a
+  supporting body system.
+- Every organ/module is bound to a Cat-8 link on the research rig (ports 13+),
+  so the human emulation rides the same link layer as the EDD base.
+- `HumanTwin.emit_frames()` serializes each organ's vitals (and each module's
+  activation) into raw Cat-8 frames that decode identically in Python and Rust.
+
+The Rust core mirrors this module-for-module (`new_body_core::body`).
 
 ## Extension points (for R&D contributors)
 

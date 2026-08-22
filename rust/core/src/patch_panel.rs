@@ -58,6 +58,11 @@ fn registry() -> &'static Mutex<Vec<SubsystemSpec>> {
     REGISTRY.get_or_init(|| Mutex::new(Vec::new()))
 }
 
+/// Serializes tests that mutate or rely on the process-global [`REGISTRY`],
+/// preventing interleaved `clear_registry`/`seed` races under `--test-threads`.
+#[cfg(test)]
+pub(crate) static REGISTRY_TEST_LOCK: Mutex<()> = Mutex::new(());
+
 /// Canonical 12-port base chassis (section 3 of the EDD).
 pub fn base_specs() -> Vec<SubsystemSpec> {
     vec![
@@ -278,6 +283,7 @@ mod tests {
 
     #[test]
     fn default_layout_has_12_ports() {
+        let _guard = REGISTRY_TEST_LOCK.lock().unwrap();
         let panel = PatchPanel::default_layout(|pid| Cat8Link::new(format!("cat8-{pid:02}"), 4.5));
         assert_eq!(panel.ports.len(), 12);
         assert_eq!(
@@ -294,6 +300,7 @@ mod tests {
 
     #[test]
     fn register_appends_node() {
+        let _guard = REGISTRY_TEST_LOCK.lock().unwrap();
         clear_registry();
         seed_base_registry();
         register_subsystem(
@@ -316,6 +323,7 @@ mod tests {
 
     #[test]
     fn register_rejects_overlap() {
+        let _guard = REGISTRY_TEST_LOCK.lock().unwrap();
         clear_registry();
         register_subsystem(
             SubsystemSpec::new(

@@ -1,6 +1,7 @@
 //! `new-body-rs` — Rust CLI for the New Body surrogate control plane.
 
 use clap::{Parser, Subcommand};
+use new_body_core::body::HumanTwin;
 use new_body_core::raw::{Frame, PROTO_SENSORY};
 use new_body_core::render;
 use new_body_core::surrogate::Surrogate;
@@ -27,6 +28,8 @@ enum Command {
     Health,
     /// Encode + decode a sample raw binary frame (demonstrates the link layer).
     Frame,
+    /// Emulate the full human body & mind as a structural digital twin.
+    Human,
 }
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -63,6 +66,18 @@ fn main() {
                 "decoded: proto={} port={} ts={} payload={:?}",
                 decoded.protocol, decoded.port, decoded.timestamp_us, decoded.payload
             );
+        }
+        Command::Human => {
+            let twin = HumanTwin::factory_default(&cli.name);
+            println!("{}", twin.summary());
+            let frames = twin.emit_frames();
+            println!(
+                "\nEmitted {} raw Cat-8 frames carrying body + mind telemetry",
+                frames.len()
+            );
+            if let Some(first) = frames.first() {
+                println!("sample frame: {}", hex_encode(first));
+            }
         }
     }
 }

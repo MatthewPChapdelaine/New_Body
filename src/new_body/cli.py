@@ -3,6 +3,7 @@
 import argparse
 import sys
 
+from .body import HumanTwin
 from .raw import (
     PROTO_SENSORY,
     Frame,
@@ -24,6 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("status", help="print full infrastructure status")
     sub.add_parser("health", help="run link/power/ESD health check")
     sub.add_parser("frame", help="encode + decode a sample raw binary frame")
+    sub.add_parser("human", help="emulate the full human body & mind (digital twin)")
     return p
 
 
@@ -54,7 +56,19 @@ def main(argv=None) -> int:
         return 0 if surrogate.is_healthy() else 1
     elif args.command == "frame":
         _demo_frame()
+    elif args.command == "human":
+        _demo_human(args.name)
     return 0
+
+
+def _demo_human(name: str) -> None:
+    twin = HumanTwin.factory_default(name)
+    print(twin.summary())
+    print()
+    frames = twin.emit_frames()
+    print(f"Emitted {len(frames)} raw Cat-8 frames carrying body + mind telemetry")
+    if frames:
+        print(f"sample frame: {frames[0].hex()}")
 
 
 if __name__ == "__main__":

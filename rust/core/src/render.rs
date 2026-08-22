@@ -51,6 +51,7 @@ mod tests {
 
     #[test]
     fn status_renders_panel() {
+        let _guard = crate::patch_panel::REGISTRY_TEST_LOCK.lock().unwrap();
         let s = Surrogate::factory_default("S");
         let out = render_status(&s);
         assert!(out.contains("== New Body :: S =="));
@@ -59,6 +60,7 @@ mod tests {
 
     #[test]
     fn health_renders_ok() {
+        let _guard = crate::patch_panel::REGISTRY_TEST_LOCK.lock().unwrap();
         let s = Surrogate::factory_default("S");
         assert!(render_health(&s).starts_with("[OK]"));
     }

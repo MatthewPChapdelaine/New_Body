@@ -138,6 +138,11 @@ def seed_base_registry() -> None:
         _REGISTRY.setdefault(spec.name, spec)
 
 
+def base_specs() -> list[SubsystemSpec]:
+    """Return a fresh list of the canonical 12-port base chassis specs."""
+    return list(_BASE_SPECS)
+
+
 seed_base_registry()
 
 

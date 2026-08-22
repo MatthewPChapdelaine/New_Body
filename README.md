@@ -52,6 +52,15 @@ new-body --name Surrogate-01 status
 
 # Health check across links, power, and ESD
 new-body health
+
+# Encode + decode a sample raw Cat-8 frame
+new-body frame
+
+# Emulate the full human body & mind as a structural digital twin
+new-body human
+
+# Rust CLI equivalent
+new-body-rs human
 ```
 
 ## Library
@@ -63,6 +72,24 @@ s = Surrogate.factory_default("Surrogate-01")
 print(s.telemetry())
 print(s.health_check())   # [] when nominal
 ```
+
+### Human body & mind digital twin
+
+`new_body.body` extends the surrogate control plane into an 11-system,
+10-module anatomical + cognitive model. Each organ and mind module is bound to
+a Cat-8 link on the research rig (ports 13+) and can be serialized into the raw
+binary link layer (`PROTO_BIOMETRIC` / `PROTO_COGNITIVE`).
+
+```python
+from new_body.body import HumanTwin
+
+twin = HumanTwin.factory_default("Human-01")
+print(twin.summary())          # body systems, mind modules, status
+print(twin.is_healthy())       # True for the canonical twin
+frames = twin.emit_frames()    # raw Cat-8 frames over the link layer
+```
+
+The Rust core mirrors this exactly (`new_body_core::body::HumanTwin`).
 
 ## Tests
 

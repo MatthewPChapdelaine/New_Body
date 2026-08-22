@@ -4,6 +4,7 @@
 //! control plane described in `source.html`. Mirrors the Python package's
 //! module layout so the two stay in sync.
 
+pub mod body;
 pub mod cat8;
 pub mod chassis;
 pub mod patch_panel;
