@@ -1,6 +1,7 @@
 //! `new-body-rs` — Rust CLI for the New Body surrogate control plane.
 
 use clap::{Parser, Subcommand};
+use new_body_core::raw::{Frame, PROTO_SENSORY};
 use new_body_core::render;
 use new_body_core::surrogate::Surrogate;
 
@@ -24,6 +25,16 @@ enum Command {
     Status,
     /// Run link/power/ESD health check.
     Health,
+    /// Encode + decode a sample raw binary frame (demonstrates the link layer).
+    Frame,
+}
+
+fn hex_encode(bytes: &[u8]) -> String {
+    bytes
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect::<Vec<_>>()
+        .join("")
 }
 
 fn main() {
@@ -37,6 +48,21 @@ fn main() {
             if !surrogate.is_healthy() {
                 std::process::exit(1);
             }
+        }
+        Command::Frame => {
+            let frame = Frame {
+                protocol: PROTO_SENSORY,
+                port: 3,
+                timestamp_us: 1_234_567,
+                payload: vec![0xDE, 0xAD, 0xBE, 0xEF],
+            };
+            let bytes = frame.encode();
+            println!("encoded ({} bytes): {}", bytes.len(), hex_encode(&bytes));
+            let decoded = Frame::decode(&bytes).expect("roundtrip");
+            println!(
+                "decoded: proto={} port={} ts={} payload={:?}",
+                decoded.protocol, decoded.port, decoded.timestamp_us, decoded.payload
+            );
         }
     }
 }

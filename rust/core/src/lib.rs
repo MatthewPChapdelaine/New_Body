@@ -8,5 +8,6 @@ pub mod cat8;
 pub mod chassis;
 pub mod patch_panel;
 pub mod poe;
+pub mod raw;
 pub mod render;
 pub mod surrogate;

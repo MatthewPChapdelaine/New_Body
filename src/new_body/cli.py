@@ -3,6 +3,12 @@
 import argparse
 import sys
 
+from .raw import (
+    PROTO_SENSORY,
+    Frame,
+    decode_frame,
+    encode_frame,
+)
 from .surrogate import Surrogate
 from .telemetry import render_health, render_status
 
@@ -17,7 +23,24 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("status", help="print full infrastructure status")
     sub.add_parser("health", help="run link/power/ESD health check")
+    sub.add_parser("frame", help="encode + decode a sample raw binary frame")
     return p
+
+
+def _demo_frame() -> None:
+    frame = Frame(
+        protocol=PROTO_SENSORY,
+        port=3,
+        timestamp_us=1_234_567,
+        payload=bytes([0xDE, 0xAD, 0xBE, 0xEF]),
+    )
+    raw = encode_frame(frame)
+    print(f"encoded ({len(raw)} bytes): {raw.hex()}")
+    decoded = decode_frame(raw)
+    print(
+        f"decoded: proto={decoded.protocol} port={decoded.port} "
+        f"ts={decoded.timestamp_us} payload={decoded.payload.hex()}"
+    )
 
 
 def main(argv=None) -> int:
@@ -29,6 +52,8 @@ def main(argv=None) -> int:
     elif args.command == "health":
         print(render_health(surrogate))
         return 0 if surrogate.is_healthy() else 1
+    elif args.command == "frame":
+        _demo_frame()
     return 0
 
 

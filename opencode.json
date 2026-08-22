@@ -1,0 +1,42 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permissions": [
+    "Bash(make:*)",
+    "Bash(cargo:*)",
+    "Bash(python3 -m pytest:*)",
+    "Bash(python3 -m ruff:*)",
+    "Bash(python3 -m black:*)",
+    "Bash(maturin:*)",
+    "Bash(git status:*)",
+    "Bash(git diff:*)",
+    "Bash(git log:*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push:*)",
+    "Bash(git pull:*)"
+  ],
+  "docs": [
+    "README.md",
+    "CONTRIBUTING.md",
+    "docs/ARCHITECTURE.md",
+    "rust/README.md",
+    "source.html"
+  ],
+  "agents": {
+    "python-dev": {
+      "description": "Implements and tests the Python control plane (src/new_body) and its pytest suite.",
+      "prompt": "You work on the pure-Python control plane in src/new_body/. Keep full type hints and docstrings, follow the extension model in docs/ARCHITECTURE.md, and verify changes with `make test` and `make lint` (ruff + black). The Rust core (rust/core) mirrors this code — keep the two in parity when you change shared behavior.",
+      "tools": ["fs", "bash", "web"]
+    },
+    "rust-dev": {
+      "description": "Implements and tests the Rust core (rust/core) and CLI (rust/cli).",
+      "prompt": "You work on the Rust workspace under rust/. Preserve the module layout that mirrors the Python package, keep unit tests in parity with src/new_body, and verify with `cargo test --manifest-path rust/Cargo.toml`, `cargo clippy --all-targets -- -D warnings`, and `cargo fmt --all`. The PyO3 binding lives in rust/pyext (separate workspace).",
+      "tools": ["fs", "bash", "web"]
+    },
+    "reviewer": {
+      "description": "Reviews changes for parity, lint, and architectural consistency across the dual-language core.",
+      "prompt": "Review the staged diff for: (1) Python/Rust behavior parity, (2) ruff/black and clippy/fmt cleanliness, (3) adherence to the extension-point contract in docs/ARCHITECTURE.md. Report concrete issues; do not edit files unless asked.",
+      "tools": ["fs", "bash"]
+    }
+  }
+}
