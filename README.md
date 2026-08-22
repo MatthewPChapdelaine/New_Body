@@ -128,3 +128,12 @@ cd rust/pyext && maturin develop
 python -c "from new_body._rust import RustSurrogate, RUST_AVAILABLE; print(RUST_AVAILABLE)"
 ```
 
+## Contributor Quest (HTML5 game)
+
+R&D contributors are rewarded automatically. Every repository action earns XP
+that climbs a **100-level** ladder of research tiers, unlocking status ranks,
+repo privileges, and physical/digital prizes. See
+[`docs/GAME_DESIGN.md`](docs/GAME_DESIGN.md); open
+[`game/index.html`](game/index.html) for the playable progression prototype, and
+`make levels` to regenerate the level table.
+

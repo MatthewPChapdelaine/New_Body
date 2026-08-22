@@ -4,7 +4,7 @@
 PYTHON ?= python3
 PIP    ?= $(PYTHON) -m pip
 
-.PHONY: install install-dev test test-all lint format format-check clean
+.PHONY: install install-dev test test-all lint format format-check clean levels
 
 install:
 	$(PIP) install -e .
@@ -31,3 +31,7 @@ clean:
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
 	rm -rf .pytest_cache build dist *.egg-info
 	cd rust && cargo clean || true
+
+# Regenerate the 100-level progression table for the R&D Contributor Quest.
+levels:
+	$(PYTHON) tools/generate_levels.py

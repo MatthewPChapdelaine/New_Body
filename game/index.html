@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>New Body — R&D Contributor Quest</title>
+<style>
+  :root {
+    --bg: #0b0f17; --panel: #131a26; --ink: #e6edf3; --muted: #8b97a7;
+    --accent: #4cc2ff; --gold: #ffcf4c; --good: #4cff9d; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  header {
+    padding: 18px 22px; border-bottom: 1px solid #223; display: flex;
+    align-items: baseline; gap: 12px; flex-wrap: wrap;
+  }
+  h1 { font-size: 20px; margin: 0; letter-spacing: .3px; }
+  .tag { color: var(--muted); font-size: 13px; }
+  main { max-width: 980px; margin: 0 auto; padding: 22px; }
+  .panel {
+    background: var(--panel); border: 1px solid #223; border-radius: 12px;
+    padding: 16px; margin-bottom: 18px;
+  }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; }
+  .stat { background: #0e1420; border: 1px solid #223; border-radius: 10px; padding: 12px; }
+  .stat .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .stat .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .v.gold { color: var(--gold); } .v.accent { color: var(--accent); } .v.good { color: var(--good); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  button {
+    background: #1c2738; color: var(--ink); border: 1px solid #2c3a52;
+    border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 14px;
+  }
+  button:hover { background: #243349; border-color: var(--accent); }
+  .bar { height: 14px; background: #0e1420; border: 1px solid #223; border-radius: 8px; overflow: hidden; margin-top: 8px; }
+  .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--good)); width: 0; transition: width .4s ease; }
+  .track { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin-top: 10px; }
+  .cell {
+    aspect-ratio: 1; border-radius: 5px; background: #0e1420; border: 1px solid #223;
+    display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted);
+  }
+  .cell.on { background: #16344a; border-color: var(--accent); color: var(--accent); }
+  .cell.ms { background: #3a2f12; border-color: var(--gold); color: var(--gold); }
+  .reward { padding: 10px 12px; border-radius: 10px; margin-top: 10px; border: 1px solid #223; background: #0e1420; }
+  .reward.prize { border-color: var(--gold); }
+  .reward.privilege { border-color: var(--good); }
+  .muted { color: var(--muted); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  h2 { font-size: 16px; margin: 0 0 10px; }
+  ul { margin: 8px 0 0; padding-left: 18px; } li { margin: 4px 0; }
+  .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#16344a; color:var(--accent); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>New Body — R&D Contributor Quest</h1>
+  <span class="tag">100 levels · automatic contribution tracking · HTML5</span>
+</header>
+<main>
+  <section class="panel">
+    <div class="stats">
+      <div class="stat"><div class="k">Total XP</div><div class="v accent" id="xp">0</div></div>
+      <div class="stat"><div class="k">Level</div><div class="v gold" id="lvl">1</div></div>
+      <div class="stat"><div class="k">Tier</div><div class="v" id="tier">Initiate Researcher</div></div>
+      <div class="stat"><div class="k">Rank</div><div class="v" id="rank">Bronze</div></div>
+      <div class="stat"><div class="k">To next level</div><div class="v good" id="next">100 XP</div></div>
+    </div>
+    <div class="bar"><span id="bar"></span></div>
+    <div class="actions">
+      <button data-xp="50">Merged PR (+50)</button>
+      <button data-xp="25">Tests added (+25)</button>
+      <button data-xp="20">Review approved (+20)</button>
+      <button data-xp="15">Docs improved (+15)</button>
+      <button data-xp="15">Issue triaged (+15)</button>
+      <button data-xp="10">Issue opened (+10)</button>
+      <button data-xp="30">Telemetry bug found (+30)</button>
+      <button data-xp="100">Release shipped (+100)</button>
+      <button id="reset" style="margin-left:auto">Reset</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Progression Track</h2>
+    <div class="track" id="track"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Current Unlock</h2>
+    <div class="reward" id="curReward">—</div>
+  </section>
+
+  <section class="panel">
+    <div class="row"><h2>Unlocked Prizes</h2><span class="pill" id="prizeCount">0 / 5</span></div>
+    <ul id="prizes"></ul>
+    <h2 style="margin-top:14px">Unlocked Privileges</h2>
+    <ul id="privs"></ul>
+  </section>
+</main>
+
+<script src="levels.js"></script>
+<script>
+(function () {
+  if (!window.LEVELS) { alert("levels.js failed to load"); return; }
+  var LEVELS = window.LEVELS;
+  var xp = 0;
+
+  function levelFor(xp) {
+    var lvl = 1;
+    for (var i = 0; i < LEVELS.length; i++) {
+      if (LEVELS[i].xp_to_reach <= xp) lvl = LEVELS[i].level;
+      else break;
+    }
+    return LEVELS[lvl - 1];
+  }
+
+  function render() {
+    var cur = levelFor(xp);
+    var next = (cur.level < 100) ? LEVELS[cur.level] : null;
+    var xpIn = xp - cur.xp_to_reach;
+    var span = (cur.level < 100) ? cur.xp_for_next : 1;
+
+    document.getElementById("xp").textContent = xp.toLocaleString();
+    document.getElementById("lvl").textContent = cur.level;
+    document.getElementById("tier").textContent = cur.tier;
+    document.getElementById("rank").textContent = cur.rank;
+    document.getElementById("next").textContent =
+      (cur.level < 100) ? (cur.xp_for_next - xpIn).toLocaleString() + " XP" : "MAX";
+    document.getElementById("bar").style.width =
+      Math.min(100, (xpIn / span) * 100) + "%";
+
+    var r = cur.reward;
+    var box = document.getElementById("curReward");
+    box.className = "reward" + (r.type === "prize" ? " prize" : r.type === "privilege" ? " privilege" : "");
+    var label = { badge: "Badge", prize: "Prize", privilege: "Privilege" }[r.type];
+    box.innerHTML = "<b>" + label + ":</b> " + r.name;
+
+    // track
+    var track = document.getElementById("track");
+    track.innerHTML = "";
+    for (var i = 0; i < LEVELS.length; i++) {
+      var L = LEVELS[i];
+      var c = document.createElement("div");
+      c.className = "cell" + (L.level <= cur.level ? " on" : "") + (L.milestone ? " ms" : "");
+      c.textContent = L.level;
+      c.title = "L" + L.level + " · " + L.tier + " · " + L.reward.name;
+      track.appendChild(c);
+    }
+
+    // prizes + privileges earned
+    var prizes = [], privs = [];
+    for (var j = 0; j < cur.level; j++) {
+      var e = LEVELS[j];
+      if (e.reward.type === "prize") prizes.push(e.reward.name + "  (Level " + e.level + ")");
+      if (e.reward.type === "privilege") privs.push(e.reward.name + "  (Level " + e.level + ")");
+    }
+    document.getElementById("prizes").innerHTML = prizes.map(function (p) { return "<li>" + p + "</li>"; }).join("");
+    document.getElementById("privs").innerHTML = privs.map(function (p) { return "<li>" + p + "</li>"; }).join("");
+    document.getElementById("prizeCount").textContent = prizes.length + " / 5";
+
+    try { localStorage.setItem("nb_xp", String(xp)); } catch (e) {}
+  }
+
+  document.querySelectorAll("button[data-xp]").forEach(function (b) {
+    b.addEventListener("click", function () { xp += parseInt(b.getAttribute("data-xp"), 10); render(); });
+  });
+  document.getElementById("reset").addEventListener("click", function () { xp = 0; render(); });
+
+  try { xp = parseInt(localStorage.getItem("nb_xp") || "0", 10) || 0; } catch (e) {}
+  render();
+})();
+</script>
+</body>
+</html>
