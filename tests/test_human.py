@@ -4,17 +4,28 @@ from new_body.body import BodySystemId, HumanTwin, MindModuleId
 from new_body.raw import (
     PROTO_BIOMETRIC,
     PROTO_COGNITIVE,
+    PROTO_NATURE,
     decode_frame,
 )
 
 
 def test_factory_default_full_body_and_mind():
     twin = HumanTwin.factory_default("Human-QA")
-    # 11 body systems, 10 mind modules
+    # 11 body systems, 10 mind modules, 33 nature constructs
     assert len(twin.systems) == 11
     assert len(twin.mind) == 10
+    assert len(twin.nature.constructs) == 38
     assert BodySystemId.NERVOUS.value in [s.id for s in twin.systems]
     assert MindModuleId.LANGUAGE.value in [m.id for m in twin.mind]
+
+
+def test_human_nature_groups_and_bounds():
+    twin = HumanTwin.factory_default()
+    groups = {c.group for c in twin.nature.constructs}
+    assert len(groups) == 5  # drives, temperament, values, moral, higher
+    for c in twin.nature.constructs:
+        assert 0.0 <= c.value <= 1.0
+    assert twin.nature.is_healthy()
 
 
 def test_canonical_twin_is_healthy():
@@ -22,16 +33,17 @@ def test_canonical_twin_is_healthy():
     assert twin.is_healthy()
     t = twin.telemetry()
     assert t["overall_status"] == "nominal"
-    # base 12 + body organs + mind modules span the patch panel
+    # base 12 + body organs + mind modules + nature span the patch panel
     assert t["surrogate_ports"] > 12
+    assert t["nature_constructs"] == 38
 
 
 def test_emit_frames_roundtrip():
     twin = HumanTwin.factory_default()
     frames = twin.emit_frames()
-    # every organ (biometric) + mind module (cognitive) emits one frame
+    # every organ (biometric) + mind module (cognitive) + nature facet emits one
     organs = sum(len(s.organs) for s in twin.systems)
-    assert len(frames) == organs + len(twin.mind)
+    assert len(frames) == organs + len(twin.mind) + len(twin.nature.constructs)
 
     # decode the first biometric frame and confirm it carries f32 vitals
     decoded = decode_frame(frames[0])
@@ -44,6 +56,12 @@ def test_emit_frames_roundtrip():
     dec = decode_frame(cog)
     (act,) = struct.unpack("<f", dec.payload)
     assert 0.0 <= act <= 1.0
+
+    # a nature frame decodes to a single f32 weight
+    nat = [f for f in frames if decode_frame(f).protocol == PROTO_NATURE][0]
+    ndec = decode_frame(nat)
+    (w,) = struct.unpack("<f", ndec.payload)
+    assert 0.0 <= w <= 1.0
 
 
 def test_out_of_range_detected():

@@ -16,7 +16,7 @@ from enum import Enum
 
 from .cat8 import Cat8Link
 from .patch_panel import PatchPanel, SubsystemSpec, base_specs
-from .raw import PROTO_BIOMETRIC, PROTO_COGNITIVE, Frame, encode_frame
+from .raw import PROTO_BIOMETRIC, PROTO_COGNITIVE, PROTO_NATURE, Frame, encode_frame
 from .surrogate import Surrogate
 
 
@@ -161,6 +161,217 @@ class MindModule:
         }
 
 
+@dataclass
+class NatureConstruct:
+    """A single encoded facet of human nature, bound to a Cat-8 link.
+
+    Human nature — the instinctual and valuative substrate beneath mind — is
+    encoded as a normalized weight (0.0..1.0) and rides the *same* artificial
+    nervous system as the body and mind. Constructs are grouped (drives,
+    temperament, values, moral foundations, higher nature) so the surrogate's
+    "character" is inspectable, serializable, and validatable.
+    """
+
+    id: str
+    name: str
+    group: str
+    value: float  # 0.0 .. 1.0 encoded weight
+    description: str = ""
+    port: int | None = None
+    link: Cat8Link | None = None
+
+    def validate(self) -> list[str]:
+        issues: list[str] = []
+        if not 0.0 <= self.value <= 1.0:
+            issues.append(f"{self.name}: nature weight {self.value} out of range 0..1")
+        if self.link is not None:
+            issues.extend(self.link.validate())
+        return issues
+
+    def telemetry(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "group": self.group,
+            "value": self.value,
+            "port": self.port,
+        }
+
+
+@dataclass
+class HumanNature:
+    """The encoded human nature layer of the digital twin."""
+
+    name: str
+    constructs: list[NatureConstruct] = field(default_factory=list)
+
+    def by_group(self, group: str) -> list[NatureConstruct]:
+        return [c for c in self.constructs if c.group == group]
+
+    def validate(self) -> list[str]:
+        issues: list[str] = []
+        for c in self.constructs:
+            issues.extend(c.validate())
+        return issues
+
+    def is_healthy(self) -> bool:
+        return not self.validate()
+
+    def telemetry(self) -> dict:
+        return {
+            "name": self.name,
+            "constructs": len(self.constructs),
+            "groups": sorted({c.group for c in self.constructs}),
+            "mean_weight": (
+                round(sum(c.value for c in self.constructs) / len(self.constructs), 3)
+                if self.constructs
+                else 0.0
+            ),
+        }
+
+
+# The encoded human nature substrate. Each facet is a normalized weight (0..1)
+# over five groups. The first group, INSTINCT, is the survival/instinctual
+# bedrock — the part of human nature that is encoded directly as the surrogate's
+# reflexive substrate — followed by temperament, value orientation, moral
+# foundations, and higher-order nature (creativity, meaning, mortality).
+_NATURE_BLUEPRINT: list[tuple[str, str, list[tuple[str, str, float, str]]]] = [
+    (
+        "instinct",
+        "Instinct",
+        [
+            ("fight", "Fight", 0.62, "Confrontational defense response"),
+            ("flight", "Flight", 0.70, "Withdrawal from perceived threat"),
+            ("freeze", "Freeze", 0.55, "Immobilization under overwhelm"),
+            ("seeking", "Seeking", 0.88, "Appetitive exploration drive (Panksepp)"),
+            ("attachment", "Attachment", 0.82, "Bonding & proximity maintenance"),
+            ("aversion", "Aversion", 0.75, "Withdrawal from noxious stimuli"),
+            ("nurturance", "Nurturance", 0.80, "Care-giving toward the vulnerable"),
+            ("dominance", "Dominance", 0.58, "Assertion of status / control"),
+            ("submission", "Submission", 0.60, "Yielding to higher status"),
+            ("play", "Play", 0.66, "Intrinsic, non-instrumental exploration"),
+            ("homeostasis", "Homeostasis", 0.90, "Regulation toward equilibrium"),
+            ("curiosity", "Curiosity", 0.85, "Information-seeking instinct"),
+        ],
+    ),
+    (
+        "temperament",
+        "Temperament (Big Five)",
+        [
+            ("openness", "Openness", 0.82, "Receptivity to novelty & experience"),
+            (
+                "conscientiousness",
+                "Conscientiousness",
+                0.75,
+                "Order, duty, goal-direction",
+            ),
+            (
+                "extraversion",
+                "Extraversion",
+                0.60,
+                "Orientation to external stimulation",
+            ),
+            (
+                "agreeableness",
+                "Agreeableness",
+                0.77,
+                "Prosocial & cooperative tendency",
+            ),
+            ("neuroticism", "Neuroticism", 0.35, "Reactivity to negative affect"),
+        ],
+    ),
+    (
+        "values",
+        "Value Orientation",
+        [
+            ("self_direction", "Self-Direction", 0.85, "Autonomy of thought & action"),
+            ("stimulation", "Stimulation", 0.70, "Novelty, challenge, excitement"),
+            ("hedonism", "Hedonism", 0.65, "Pleasure & sensuous gratification"),
+            (
+                "achievement",
+                "Achievement",
+                0.78,
+                "Personal success per social standards",
+            ),
+            ("power", "Power", 0.55, "Dominance & control over resources"),
+            ("security", "Security", 0.80, "Safety, stability, order of environment"),
+            ("conformity", "Conformity", 0.60, "Restraint of impulses per norms"),
+            ("tradition", "Tradition", 0.58, "Respect & commitment to customs"),
+            ("benevolence", "Benevolence", 0.86, "Welfare of close & in-group others"),
+            ("universalism", "Universalism", 0.83, "Welfare of all people & nature"),
+        ],
+    ),
+    (
+        "moral",
+        "Moral Foundations",
+        [
+            (
+                "care",
+                "Care / Harm",
+                0.88,
+                "Protect from suffering, tend the vulnerable",
+            ),
+            (
+                "fairness",
+                "Fairness / Cheating",
+                0.84,
+                "Proportional justice & reciprocity",
+            ),
+            (
+                "loyalty",
+                "Loyalty / Betrayal",
+                0.72,
+                "Devotion to in-group & allegiance",
+            ),
+            (
+                "authority",
+                "Authority / Subversion",
+                0.64,
+                "Deference to legitimate order",
+            ),
+            (
+                "sanctity",
+                "Sanctity / Degradation",
+                0.60,
+                "Purity, elevation, contamination",
+            ),
+        ],
+    ),
+    (
+        "higher",
+        "Higher Nature",
+        [
+            (
+                "creativity",
+                "Creativity",
+                0.84,
+                "Generative recombination of possibility",
+            ),
+            (
+                "imagination",
+                "Imagination",
+                0.82,
+                "Simulation of absent & counterfactual",
+            ),
+            ("empathy", "Empathy", 0.87, "Affective & cognitive resonance with others"),
+            (
+                "narrative_identity",
+                "Narrative Identity",
+                0.80,
+                "Self as an unfolding story",
+            ),
+            (
+                "mortality_awareness",
+                "Mortality Awareness",
+                0.74,
+                "Finitude as meaning-source",
+            ),
+            ("meaning", "Meaning / Purpose", 0.85, "Coherent aim beyond bare function"),
+        ],
+    ),
+]
+
+
 # Canonical human blueprint: 11 body systems with representative organs, and
 # 10 cognitive modules. Vitals use typical adult reference ranges.
 _HUMAN_BLUEPRINT: list[
@@ -301,12 +512,13 @@ _MIND_BLUEPRINT: list[tuple[str, str, float, str, str]] = [
 
 @dataclass
 class HumanTwin:
-    """Digital twin of a full human body and mind, riding the surrogate rig."""
+    """Digital twin of a full human body, mind, and nature, riding the rig."""
 
     name: str
     surrogate: Surrogate
     systems: list[BodySystem] = field(default_factory=list)
     mind: list[MindModule] = field(default_factory=list)
+    nature: HumanNature = field(default_factory=lambda: HumanNature(""))
 
     @classmethod
     def factory_default(cls, name: str = "Human-01") -> "HumanTwin":
@@ -373,11 +585,46 @@ class HumanTwin:
             )
         )
 
+        # --- Human Nature layer (ports continue after the cognitive mesh) ---
+        nature_start = next_port
+        nature: HumanNature = HumanNature(name=f"{name}-nature")
+        for _grp_id, grp_name, constructs in _NATURE_BLUEPRINT:
+            for cid, cname, val, desc in constructs:
+                port = next_port
+                next_port += 1
+                link = Cat8Link(identifier=f"cat8-{port:02d}", length_m=2.0)
+                nature.constructs.append(
+                    NatureConstruct(
+                        id=cid,
+                        name=cname,
+                        group=grp_name,
+                        value=val,
+                        description=desc,
+                        port=port,
+                        link=link,
+                    )
+                )
+        specs.append(
+            SubsystemSpec(
+                "Human Nature",
+                "Encoded human nature (drives/values/moral/higher)",
+                "40GBASE-T",
+                "PoE++ Type 4 (Up to 90W)",
+                (nature_start, next_port - 1),
+            )
+        )
+
         surrogate.patch_panel = PatchPanel.from_specs(
             specs, lambda pid: Cat8Link(identifier=f"cat8-{pid:02d}", length_m=2.0)
         )
 
-        return cls(name=name, surrogate=surrogate, systems=systems, mind=mind)
+        return cls(
+            name=name,
+            surrogate=surrogate,
+            systems=systems,
+            mind=mind,
+            nature=nature,
+        )
 
     # -- Validation ---------------------------------------------------------
     def validate(self) -> list[str]:
@@ -386,6 +633,7 @@ class HumanTwin:
             issues.extend(s.validate())
         for m in self.mind:
             issues.extend(m.validate())
+        issues.extend(self.nature.validate())
         issues.extend(self.surrogate.health_check())
         return issues
 
@@ -406,6 +654,8 @@ class HumanTwin:
             "body_systems": len(self.systems),
             "organs": sum(len(s.organs) for s in self.systems),
             "mind_modules": len(self.mind),
+            "nature_constructs": len(self.nature.constructs),
+            "nature_groups": len(self.nature.telemetry()["groups"]),
             "out_of_range_vitals": out_of_range,
             "overall_status": "nominal" if not out_of_range else "degraded",
             "surrogate_ports": len(self.surrogate.patch_panel.ports),
@@ -413,7 +663,7 @@ class HumanTwin:
 
     # -- Raw binary link layer ----------------------------------------------
     def emit_frames(self) -> list[bytes]:
-        """Serialize every organ + mind module into raw Cat-8 frames."""
+        """Serialize every organ, mind module, and nature facet into frames."""
         frames: list[bytes] = []
         for s in self.systems:
             for o in s.organs:
@@ -440,6 +690,18 @@ class HumanTwin:
                     )
                 )
             )
+        for c in self.nature.constructs:
+            payload = struct.pack("<f", c.value)
+            frames.append(
+                encode_frame(
+                    Frame(
+                        protocol=PROTO_NATURE,
+                        port=c.port or 0,
+                        timestamp_us=0,
+                        payload=payload,
+                    )
+                )
+            )
         return frames
 
     def summary(self) -> str:
@@ -448,6 +710,8 @@ class HumanTwin:
             f"== Human Digital Twin :: {t['name']} ==",
             f"Body systems : {t['body_systems']}  ({t['organs']} organs)",
             f"Mind modules : {t['mind_modules']}",
+            f"Human nature : {t['nature_constructs']} constructs "
+            f"across {t['nature_groups']} groups",
             f"Surrogate    : {t['surrogate_ports']} ports on the Cat-8 mesh",
             f"Status       : {t['overall_status']}",
         ]

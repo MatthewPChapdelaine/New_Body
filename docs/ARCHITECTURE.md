@@ -37,6 +37,10 @@ topologies, and chassis variants without forking core logic.
   at 90 W per line with 5 V / 12 V regulated rails.
 - **`MiniChassis`** — enclosure properties: slide-out rail, hex ventilation,
   ESD drain-to-earth.
+- **`visualize`** — `render_explorer()` / `write_explorer()` turn a `Surrogate`
+  (and optional `HumanTwin`) into a self-contained interactive HTML page
+  (clickable topology + Cat-8 / PoE++ calculators + tables). Exposed as
+  `new-body explore`; the generated page runs from `file://` with no build step.
 - **`Surrogate`** — the orchestrator. `factory_default()` builds the canonical
   rig; `health_check()` aggregates validation across all layers.
 - **`HumanTwin`** (`body.py` / `body.rs`) — a structural digital twin of the
@@ -57,10 +61,17 @@ raw-binary serialization), not a real-time physiological simulation.
 - 10 mind modules (`MindModuleId`): perception, attention, memory, learning,
   emotion, executive, language, motor, consciousness, social — each linked to a
   supporting body system.
-- Every organ/module is bound to a Cat-8 link on the research rig (ports 13+),
-  so the human emulation rides the same link layer as the EDD base.
-- `HumanTwin.emit_frames()` serializes each organ's vitals (and each module's
-  activation) into raw Cat-8 frames that decode identically in Python and Rust.
+- **Human nature**, encoded as 33 `NatureConstruct`s across 5 groups. The first
+  group, **Instinct**, is the survival/reflexive bedrock — fight, flight, freeze,
+  seeking, attachment, nurturance, etc. — encoded directly as the surrogate's
+  instinctual substrate; the remaining groups layer temperament (Big Five),
+  value orientation, moral foundations, and higher nature on top.
+- Every organ/module/nature facet is bound to a Cat-8 link on the research rig
+  (ports 13+), so the human emulation rides the same link layer as the EDD base.
+- `HumanTwin.emit_frames()` serializes each organ's vitals, each module's
+  activation, and each nature construct's weight into raw Cat-8 frames
+  (`PROTO_BIOMETRIC` / `PROTO_COGNITIVE` / `PROTO_NATURE`) that decode
+  identically in Python and Rust.
 
 The Rust core mirrors this module-for-module (`new_body_core::body`).
 

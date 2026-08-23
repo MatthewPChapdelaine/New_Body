@@ -12,6 +12,7 @@ from .raw import (
 )
 from .surrogate import Surrogate
 from .telemetry import render_health, render_status
+from .visualize import write_explorer
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -25,7 +26,24 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("status", help="print full infrastructure status")
     sub.add_parser("health", help="run link/power/ESD health check")
     sub.add_parser("frame", help="encode + decode a sample raw binary frame")
-    sub.add_parser("human", help="emulate the full human body & mind (digital twin)")
+    sub.add_parser(
+        "human",
+        help="emulate the full human body, mind & nature (digital twin)",
+    )
+
+    explore_p = sub.add_parser(
+        "explore", help="generate an interactive HTML explorer from the live model"
+    )
+    explore_p.add_argument(
+        "--out",
+        default="new_body_explorer.html",
+        help="output HTML path (default: new_body_explorer.html)",
+    )
+    explore_p.add_argument(
+        "--no-twin",
+        action="store_true",
+        help="omit the human body & mind digital twin section",
+    )
     return p
 
 
@@ -58,6 +76,11 @@ def main(argv=None) -> int:
         _demo_frame()
     elif args.command == "human":
         _demo_human(args.name)
+    elif args.command == "explore":
+        surrogate = Surrogate.factory_default(args.name)
+        twin = None if args.no_twin else HumanTwin.factory_default(f"{args.name}-twin")
+        out = write_explorer(args.out, surrogate, twin)
+        print(f"wrote interactive explorer -> {out}")
     return 0
 
 
@@ -66,7 +89,10 @@ def _demo_human(name: str) -> None:
     print(twin.summary())
     print()
     frames = twin.emit_frames()
-    print(f"Emitted {len(frames)} raw Cat-8 frames carrying body + mind telemetry")
+    print(
+        f"Emitted {len(frames)} raw Cat-8 frames carrying body + mind + "
+        f"human-nature telemetry ({len(twin.nature.constructs)} nature facets)"
+    )
     if frames:
         print(f"sample frame: {frames[0].hex()}")
 

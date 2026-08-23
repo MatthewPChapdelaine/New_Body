@@ -1,245 +1,881 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engineering Design Document: VR/Physical Surrogate Robot Infrastructure</title>
-    <style>
-        :root {
-            --bg-color: #0d1117;
-            --panel-bg: #161b22;
-            --border-color: #30363d;
-            --text-color: #c9d1d9;
-            --text-dim: #8b949e;
-            --accent-color: #58a6ff;
-            --accent-glow: rgba(88, 166, 255, 0.1);
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 40px 20px;
-        }
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 40px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-        }
-        header {
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        h1 {
-            color: #ffffff;
-            font-size: 2.2rem;
-            margin: 0 0 10px 0;
-        }
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            margin-top: 15px;
-        }
-        .meta-item strong {
-            color: var(--text-color);
-        }
-        h2 {
-            color: #ffffff;
-            font-size: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        h3 {
-            color: var(--accent-color);
-            font-size: 1.15rem;
-            margin-top: 25px;
-            margin-bottom: 10px;
-        }
-        p, li {
-            font-size: 1rem;
-            color: var(--text-color);
-        }
-        ul {
-            padding-left: 20px;
-            margin-bottom: 20px;
-        }
-        li {
-            margin-bottom: 8px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 25px 0;
-            font-size: 0.95rem;
-        }
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background-color: rgba(48, 54, 61, 0.5);
-            color: #ffffff;
-            font-weight: 600;
-        }
-        tr:nth-child(even) {
-            background-color: rgba(30, 35, 41, 0.2);
-        }
-        .diagram-container {
-            background: #090d13;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 20px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 0.85rem;
-            color: #58a6ff;
-            overflow-x: auto;
-            white-space: pre;
-            margin: 20px 0;
-        }
-        .footnote {
-            margin-top: 60px;
-            border-top: 1px dashed var(--border-color);
-            padding-top: 20px;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            text-align: center;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Body — VR/Physical Surrogate Robot Infrastructure</title>
+<style>
+:root{
+  --bg:#0b0f17; --bg2:#0d1320; --panel:#121a28; --panel2:#0f1623;
+  --border:#22304a; --border2:#2c3e5c;
+  --ink:#e6edf3; --dim:#90a0b6; --faint:#61708a;
+  --accent:#4cc2ff; --accent2:#7c9cff;
+  --good:#4cff9d; --warn:#ffcf4c; --bad:#ff6b6b; --gold:#ffcf4c;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:14px; --shadow:0 10px 40px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--ink);
+  font:15px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ---------- layout ---------- */
+.shell{display:grid;grid-template-columns:264px minmax(0,1fr);min-height:100vh}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+  background:var(--panel2);border-right:1px solid var(--border);padding:22px 16px}
+nav.side .brand{font-weight:800;letter-spacing:.4px;font-size:16px;color:#fff;margin-bottom:2px}
+nav.side .brand span{color:var(--accent)}
+nav.side .sub{color:var(--faint);font-size:12px;margin-bottom:18px}
+nav.side .grp{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--faint);
+  margin:18px 0 6px;font-weight:700}
+nav.side a.nav{display:block;padding:7px 10px;border-radius:8px;color:var(--dim);
+  font-size:13.5px;border-left:2px solid transparent;transition:.15s}
+nav.side a.nav:hover{background:#162233;color:var(--ink);text-decoration:none}
+nav.side a.nav.active{background:#15314a;color:var(--accent);border-left-color:var(--accent)}
+nav.side a.nav .n{color:var(--faint);font-size:11px;margin-right:6px}
+
+main{min-width:0;padding:0 0 80px}
+.wrap{max-width:960px;margin:0 auto;padding:0 30px}
+
+/* ---------- hero ---------- */
+header.hero{padding:54px 0 30px;border-bottom:1px solid var(--border);
+  background:radial-gradient(1200px 300px at 20% -40%,rgba(76,194,255,.18),transparent)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:12px}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 12px var(--accent)}
+h1.title{font-size:40px;line-height:1.08;margin:0 0 12px;color:#fff;letter-spacing:-.5px}
+.title .grad{background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:17px;color:var(--dim);max-width:720px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:26px}
+.fact{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
+.fact .k{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint)}
+.fact .v{font-size:15px;font-weight:700;margin-top:4px;color:var(--ink)}
+.fact .v.accent{color:var(--accent)}
+
+/* ---------- sections ---------- */
+section.block{padding:46px 0;border-bottom:1px solid var(--border)}
+h2.h{font-size:27px;color:#fff;margin:0 0 6px;display:flex;align-items:center;gap:12px}
+h2.h .num{font:700 13px/1 var(--mono);color:var(--accent);border:1px solid var(--border2);
+  background:#10202f;border-radius:8px;padding:7px 9px}
+h3.h3{font-size:18px;color:var(--accent);margin:30px 0 8px}
+p{color:var(--dim)}
+.lead{font-size:16px;color:#c4d1e3}
+.muted{color:var(--faint)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px;margin:18px 0;box-shadow:var(--shadow)}
+.panel.tight{padding:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* feature cards */
+.card{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card h4{margin:0 0 6px;color:#fff;font-size:15px}
+.card p{font-size:13.5px;margin:0;color:var(--dim)}
+.card .ic{font-size:20px;margin-bottom:8px;display:block}
+
+/* tables */
+table.t{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+table.t th,table.t td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+table.t th{background:#13202f;color:#fff;font-weight:600}
+table.t tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+table.t td.mono{font-family:var(--mono);color:var(--accent)}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;
+  background:#13283c;color:var(--accent);border:1px solid var(--border2)}
+.tag.good{background:#0f2e20;color:var(--good);border-color:#1c5436}
+.tag.gold{background:#33280c;color:var(--gold);border-color:#5c4a16}
+.tag.bad{background:#331616;color:var(--bad);border-color:#5c2626}
+
+/* code / diagram */
+pre.code{background:#070b12;border:1px solid var(--border);border-radius:10px;padding:16px;
+  font-family:var(--mono);font-size:12.5px;color:#9fe0ff;overflow-x:auto;line-height:1.55}
+.diagram{background:#070b12;border:1px solid var(--border);border-radius:10px;padding:18px;
+  font-family:var(--mono);font-size:12px;color:var(--accent);overflow-x:auto;white-space:pre}
+
+/* topology */
+.topo{width:100%;height:auto;display:block;background:
+  radial-gradient(800px 300px at 50% 0%,rgba(76,194,255,.06),transparent)}
+.topo .node{cursor:pointer}
+.topo .node rect{fill:#0f1a28;stroke:var(--border2);stroke-width:1.5;transition:.15s}
+.topo .node:hover rect{stroke:var(--accent);fill:#143049}
+.topo .node.sel rect{stroke:var(--accent);fill:#173a55}
+.topo .node text{fill:var(--ink);font:600 12px var(--sans);pointer-events:none}
+.topo .node .sub{fill:var(--faint);font:500 10px var(--mono);pointer-events:none}
+.topo .link{stroke:#2a3b57;stroke-width:1.5;fill:none}
+.topo .link.hot{stroke:var(--accent);stroke-width:2.2}
+.topo .pwr{stroke:#4cff9d;stroke-width:2;fill:none;stroke-dasharray:5 4}
+#detail{position:sticky;top:14px}
+#detail .dh{font-size:18px;color:#fff;margin:0 0 4px}
+#detail .dsub{color:var(--accent);font-size:12px;margin-bottom:10px;font-family:var(--mono)}
+#detail .dbody{color:var(--dim);font-size:14px}
+#detail .dbody ul{margin:8px 0 0;padding-left:18px}
+#detail .dbody li{margin:4px 0}
+.hint{font-size:12px;color:var(--faint);margin-top:8px}
+
+/* calculators */
+.calc{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start}
+@media(max-width:760px){.calc{grid-template-columns:1fr}}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;color:var(--dim);margin-bottom:6px;
+  display:flex;justify-content:space-between}
+.field label b{color:var(--accent);font-family:var(--mono)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=number]{width:100%;background:#0a111c;border:1px solid var(--border2);
+  color:var(--ink);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:14px}
+.readout{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.metric{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px}
+.metric .mk{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint)}
+.metric .mv{font-size:22px;font-weight:800;margin-top:3px;color:#fff}
+.metric .mv.accent{color:var(--accent)}
+.metric .mv.good{color:var(--good)}
+.metric .mv.bad{color:var(--bad)}
+.metric .mu{font-size:11px;color:var(--faint)}
+.gauge{height:12px;border-radius:8px;background:#0a111c;border:1px solid var(--border);
+  overflow:hidden;margin-top:8px}
+.gauge>span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--good))}
+.note{font-size:12.5px;margin-top:10px;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--border);background:var(--panel2)}
+.note.ok{border-color:#1c5436;background:#0d2418;color:var(--good)}
+.note.warn{border-color:#5c4a16;background:#241c0d;color:var(--gold)}
+
+/* sliders for PoE */
+.slice{display:grid;grid-template-columns:160px 1fr 70px;gap:10px;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border)}
+.slice .nm{font-size:13px;color:var(--ink)}
+.slice .rl{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.slice .val{font-family:var(--mono);font-weight:700;text-align:right;color:var(--accent)}
+
+/* twin tables */
+.sys{margin:14px 0}
+.sys .sname{font-weight:700;color:#fff;font-size:15px;display:flex;align-items:center;gap:8px}
+.sys .sstat{font-size:11px;padding:2px 8px;border-radius:999px;background:#0f2e20;
+  color:var(--good);border:1px solid #1c5436}
+.organs{margin:8px 0 0;padding-left:0;list-style:none;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.organ{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.organ .on{font-size:13.5px;color:#fff;font-weight:600}
+.organ .ov{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:4px}
+.organ .ov .in{color:var(--good)}
+.mind{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.mcard{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px}
+.mcard .mn{font-weight:700;color:#fff;font-size:14px}
+.mcard .ml{font-size:11.5px;color:var(--faint)}
+.mcard .ma{height:6px;border-radius:4px;background:#0a111c;margin-top:8px;overflow:hidden}
+.mcard .ma>span{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+
+/* tier ladder */
+.ladder{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.rung{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px}
+.rung .lv{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.rung .tn{font-weight:700;color:#fff;font-size:14px}
+.rung .rk{font-size:11.5px;margin-top:3px}
+.rank-Bronze{color:#cd7f32}.rank-Silver{color:#c0c0c0}.rank-SilverII{color:#cfd6e6}
+.rank-Gold{color:var(--gold)}.rank-GoldII{color:#ffe08a}.rank-Platinum{color:#7fe9ff}
+.rank-PlatinumII{color:#aef0ff}.rank-Diamond{color:#9affd6}.rank-DiamondII{color:#bff7e2}
+.rank-Legend{color:#ff9cf0}
+
+/* steps */
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0}
+.steps li{position:relative;padding:10px 0 10px 42px;border-bottom:1px solid var(--border)}
+.steps li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:10px;
+  width:26px;height:26px;border-radius:50%;background:#13283c;color:var(--accent);
+  border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;
+  font:700 13px var(--mono)}
+.steps li b{color:#fff}
+
+/* mobile nav toggle */
+.menu-btn{display:none;position:fixed;top:12px;left:12px;z-index:50;background:var(--panel);
+  border:1px solid var(--border2);color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer}
+@media(max-width:920px){
+  .shell{grid-template-columns:1fr}
+  nav.side{position:fixed;left:0;top:0;z-index:40;width:264px;transform:translateX(-100%);
+    transition:.25s;box-shadow:var(--shadow)}
+  nav.side.open{transform:translateX(0)}
+  .menu-btn{display:block}
+  .wrap{padding:0 18px}
+  header.hero{padding-top:64px}
+  .backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:35}
+  .backdrop.show{display:block}
+}
+footer{color:var(--faint);font-size:12px;text-align:center;padding:30px}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#13283c;
+  color:var(--accent);font-size:12px;border:1px solid var(--border2);margin:2px 3px 2px 0}
+</style>
 </head>
 <body>
+<button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰ Menu</button>
+<div class="backdrop" id="backdrop"></div>
+<div class="shell">
+<nav class="side" id="side">
+  <div class="brand">New<span>Body</span></div>
+  <div class="sub">Surrogate Robot Infrastructure</div>
 
-<div class="container">
-    <header>
-        <h1>Engineering Design Document (EDD)</h1>
-        <div style="color: var(--accent-color); font-weight: 600; font-size: 1.2rem; margin-bottom: 15px;">
-            VR/Physical Surrogate Robot Infrastructure Framework
-        </div>
-        <div class="meta-grid">
-            <div class="meta-item"><strong>Date:</strong> August 21, 2026</div>
-            <div class="meta-item"><strong>System Archetype:</strong> Stationary Placing Rig</div>
-            <div class="meta-item"><strong>Core Platform:</strong> Linux Mint Cinnamon</div>
-            <div class="meta-item"><strong>Virtual Integration:</strong> VRChat SDK Manual Stack</div>
-        </div>
-    </header>
+  <div class="grp">Document</div>
+  <a class="nav" href="#overview"><span class="n">00</span>Overview</a>
+  <a class="nav" href="#topology"><span class="n">01</span>Interactive Topology</a>
 
-    <section>
-        <h2>1. Executive Summary</h2>
-        <p>This design specification formalizes the physical layer and power distribution topology for a high-fidelity, 6-foot physical surrogate shell and real-time VR companion platform. Operating within a stationary placing rig infrastructure, the framework bridges high-density sensory arrays with an internal, liquid-cooled processing core running localized logic and the VRChat SDK manual pipeline. By offloading computational data routing and structural link pathways into a standalone physical matrix, this architecture achieves sub-millisecond serialization speeds while isolating delicate compute engines from kinetic, magnetic, and thermal stresses.</p>
-    </section>
+  <div class="grp">The Four Pillars</div>
+  <a class="nav" href="#nervous"><span class="n">02</span>Nervous System · Cat-8</a>
+  <a class="nav" href="#patch"><span class="n">03</span>Patch Panel</a>
+  <a class="nav" href="#chassis"><span class="n">04</span>Mini-Chassis</a>
+  <a class="nav" href="#poe"><span class="n">05</span>PoE++ Delivery</a>
 
-    <section>
-        <h2>2. Nervous System Emulation (Cat-8 Array)</h2>
-        <p>The surrogate hardware's nervous system relies on Category 8 (Cat-8) copper topology configured exclusively for high-frequency 40GBASE-T deployments. The implementation maps data transmission profiles directly against sub-millisecond sensory demands.</p>
-        <ul>
-            <li><strong>Throughput & Frequency Boundary:</strong> Delivers an operational ceiling of 40 Gbps at a maximum internal bus width of 2,000 MHz (2 GHz), matching micro-sensory capture speeds.</li>
-            <li><strong>Latency Control:</strong> Eliminates network-level packet serialization delays, validating high-precision spatial tracking, facial sync, and localized haptic telemetry arrays without queue buffer interference.</li>
-            <li><strong>Electromagnetic Interference Isolation:</strong> Utilizes strict Shielded with Foiled Twisted Pair (S/FTP) construction, where individual wire pairs are wrapped in foil and encapsulated by an overall outer braided sleeve. This prevents data packet corruption from adjacent liquid-cooling pumps and high-draw hardware logic.</li>
-            <li><strong>Geometric Distance Containment:</strong> All internal line distances are locked under a structural limit of 30 meters (98 feet) to enforce full 40 Gbps operation and avoid down-negotiation to 10 Gbps.</li>
-        </ul>
-    </section>
+  <div class="grp">The Model</div>
+  <a class="nav" href="#twin"><span class="n">06</span>Human Body · Mind · Nature</a>
+  <a class="nav" href="#quest"><span class="n">CQ</span>R&amp;D Contributor Quest</a>
 
-    <section>
-        <h2>3. Centralized Patch Panel Layout</h2>
-        <p>To preserve space within the upper chassis chambers and protect internal components from structural cable strain, all sensory connections are marshaled through a grounded, high-density 12-port mini-patch panel situated inside the lower structural base frame.</p>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Port ID</th>
-                    <th>Subsystem Node</th>
-                    <th>Sensor/Interface Array Type</th>
-                    <th>Data Protocol</th>
-                    <th>Power Profile</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>01 - 02</td>
-                    <td>Head & Sensory Node</td>
-                    <td>High-Definition Face-Tracking Cameras & Spatial Microphones</td>
-                    <td>40GBASE-T</td>
-                    <td>PoE++ Type 4 (&le;30W)</td>
-                </tr>
-                <tr>
-                    <td>03 - 06</td>
-                    <td>Upper Torso & Kinetic</td>
-                    <td>Localized Haptic Feedback Arrays & Expression Servo Controllers</td>
-                    <td>40GBASE-T</td>
-                    <td>PoE++ Type 4 (Up to 90W)</td>
-                </tr>
-                <tr>
-                    <td>07 - 08</td>
-                    <td>Lower Base & Rig</td>
-                    <td>Placing Rig Alignment Encoders & Frame Security Interlocks</td>
-                    <td>40GBASE-T</td>
-                    <td>PoE++ Type 4 (&le;15W)</td>
-                </tr>
-                <tr>
-                    <td>09 - 10</td>
-                    <td>Environmental Matrix</td>
-                    <td>Liquid-Cooling Thermal Telemetry & Lung-Style Intake Fans</td>
-                    <td>40GBASE-T</td>
-                    <td>PoE++ Type 4 (Up to 90W)</td>
-                </tr>
-                <tr>
-                    <td>11 - 12</td>
-                    <td>External Umbilical</td>
-                    <td>High-Speed Remote Uplink to Dedicated Workstation Hub</td>
-                    <td>40GBASE-T</td>
-                    <td>Unpowered (Data Only)</td>
-                </tr>
-            </tbody>
-        </table>
-    </section>
+  <div class="grp">Engineering</div>
+  <a class="nav" href="#arch"><span class="n">07</span>Architecture &amp; Extension</a>
+  <a class="nav" href="#start"><span class="n">08</span>Getting Started</a>
+  <a class="nav" href="#glossary"><span class="n">09</span>Glossary</a>
+</nav>
 
-    <section>
-        <h2>4. 3D-Printed Mini-Chassis Integration</h2>
-        <p>The 10-inch form factor mini-patch panel is housed within a custom-fabricated enclosure integrated structurally into the lower base frame, tailored for standard 3D-printing tolerances.</p>
-        <ul>
-            <li><strong>Slide-Out Rail Track:</strong> Fabricated with an integrated dual-lip slide track allowing the patch core to slide completely outward, granting toolless access to rear keystone terminators for rapid maintenance.</li>
-            <li><strong>Hexagonal Ventilation Grids:</strong> Built utilizing an algorithmic, non-deforming hexagonal lattice across the back wall. This optimizes plastic weight distribution and exhausts heat dissipated by active 40GBASE-T network interface hardware.</li>
-            <li><strong>Electrostatic Discharge (ESD) Grounding:</strong> The plastic bracket integrates an internal metal backing bar bonded directly to a 10AWG heavy copper drain wire. This safely routes static charges—built up by external shell materials or fluid pumps—straight to standard earth ground, protecting the internal i5 core and graphics processors.</li>
-        </ul>
-    </section>
+<main>
+<div class="wrap">
 
-    <section>
-        <h2>5. PoE++ Power Delivery Protocol (IEEE 802.3bt)</h2>
-        <p>To streamline interior routing and avoid massive parallel DC wiring looms, power delivery is layered entirely over the Cat-8 data lines using the IEEE 802.3bt (PoE++ Type 4) standard.</p>
-        
-        <div class="diagram-container">
-[PoE++ Injector / Switch in Base] ---- (90W Power + 40 Gbps Data over S/FTP Cat-8) ----> [Shielded Keystone]
-                                                                                               |
-                                                                                [Localized Terminal Splitter]
-                                                                                   /                       \
-                                                              (40 Gbps Raw Data to Node)       (DC Power to Actuators)
-        </div>
-
-        <ul>
-            <li><strong>Kinetic Servo Drive Isolation:</strong> High-draw expression and gesturing servos receive localized 90W power slices, isolating inducting voltage feedback and motor spikes away from the main PC power supply lines.</li>
-            <li><strong>Environmental Loop Decoupling:</strong> Localized liquid-cooling pumps and active air-circulation intake elements run natively on independent PoE++ rails, maintaining thermal containment even during primary system restarts.</li>
-            <li><strong>Drop-Down Voltage Regulation:</strong> Nodes use compact hardware splitters to drop the structural PoE line voltage down to regulated, clean 5V and 12V rails directly at the target sensory zones.</li>
-        </ul>
-    </section>
-
-    <div class="footnote">
-        Engineering Design Document • Project Nervous System Emulation • Confidential Source Asset
+  <!-- ============ HERO ============ -->
+  <header class="hero" id="overview">
+    <div class="eyebrow"><span class="dot"></span>Engineering Design Document · v2.0</div>
+    <h1 class="title">The <span class="grad">New Body</span> Surrogate Robot</h1>
+    <p class="lede">A stationary placing-rig framework that bridges high-density sensory
+    arrays with a liquid-cooled processing core — emulating a living nervous system over
+    a Cat-8 mesh, fed by layered PoE++, and governed by a dual-language digital-twin
+    control plane.</p>
+    <div class="facts">
+      <div class="fact"><div class="k">System Archetype</div><div class="v">Stationary Placing Rig</div></div>
+      <div class="fact"><div class="k">Nervous System</div><div class="v accent">Cat-8 S/FTP · 40 Gb/s</div></div>
+      <div class="fact"><div class="k">Patch Panel</div><div class="v">12-port grounded</div></div>
+      <div class="fact"><div class="k">Power</div><div class="v accent">PoE++ 802.3bt · 90 W</div></div>
+      <div class="fact"><div class="k">Digital Twin</div><div class="v">11 systems · 10 modules</div></div>
+      <div class="fact"><div class="k">Control Plane</div><div class="v">Python + Rust parity</div></div>
     </div>
+  </header>
+
+  <!-- ============ 1 TOPOLOGY ============ -->
+  <section class="block" id="topology">
+    <h2 class="h"><span class="num">01</span>Interactive Topology</h2>
+    <p class="lead">The whole framework in one schematic. <b>Click any node</b> to load its
+    specification, live parameters, and how it connects to the rest of the rig.</p>
+
+    <div class="grid2">
+      <div class="panel tight">
+        <svg class="topo" viewBox="0 0 620 470" id="topoSvg" role="img" aria-label="Surrogate topology">
+          <!-- links -->
+          <path class="link" d="M300,40 L300,92"/>
+          <path class="link" d="M150,150 L150,210"/>
+          <path class="link" d="M300,150 L300,210"/>
+          <path class="link" d="M450,150 L450,210"/>
+          <path class="link pwr" d="M560,250 L470,250"/>
+          <path class="link" d="M150,262 L150,330"/>
+          <path class="link" d="M300,262 L300,330"/>
+          <path class="link" d="M450,262 L450,330"/>
+          <path class="link" d="M300,360 L300,410"/>
+          <path class="link" d="M520,150 L520,330"/>
+
+          <!-- Workstation hub -->
+          <g class="node" data-node="hub"><rect x="225" y="10" width="150" height="44" rx="9"/>
+            <text x="300" y="31" text-anchor="middle">Workstation Hub</text>
+            <text x="300" y="46" text-anchor="middle" class="sub">remote uplink</text></g>
+
+          <!-- Patch panel -->
+          <g class="node" data-node="panel"><rect x="215" y="98" width="190" height="46" rx="9"/>
+            <text x="310" y="119" text-anchor="middle">12-Port Patch Panel</text>
+            <text x="310" y="134" text-anchor="middle" class="sub">grounded mini-panel</text></g>
+
+          <!-- Node columns -->
+          <g class="node" data-node="head"><rect x="92" y="210" width="116" height="52" rx="9"/>
+            <text x="150" y="232" text-anchor="middle">Head &amp; Sensory</text>
+            <text x="150" y="247" text-anchor="middle" class="sub">ports 01–02</text></g>
+          <g class="node" data-node="torso"><rect x="242" y="210" width="116" height="52" rx="9"/>
+            <text x="300" y="232" text-anchor="middle">Upper Torso</text>
+            <text x="300" y="247" text-anchor="middle" class="sub">ports 03–06</text></g>
+          <g class="node" data-node="rig"><rect x="392" y="210" width="116" height="52" rx="9"/>
+            <text x="450" y="232" text-anchor="middle">Lower Base &amp; Rig</text>
+            <text x="450" y="247" text-anchor="middle" class="sub">ports 07–08</text></g>
+          <g class="node" data-node="env"><rect x="470" y="98" width="120" height="46" rx="9"/>
+            <text x="530" y="119" text-anchor="middle">PoE++ Injector</text>
+            <text x="530" y="134" text-anchor="middle" class="sub">90 W per line</text></g>
+
+          <!-- chassis -->
+          <g class="node" data-node="chassis"><rect x="92" y="330" width="116" height="60" rx="9"/>
+            <text x="150" y="354" text-anchor="middle">Mini-Chassis</text>
+            <text x="150" y="370" text-anchor="middle" class="sub">slide rail · hex · ESD</text></g>
+          <g class="node" data-node="twin"><rect x="242" y="330" width="116" height="60" rx="9"/>
+            <text x="300" y="354" text-anchor="middle">Human Twin</text>
+            <text x="300" y="370" text-anchor="middle" class="sub">ports 13+ (11+10)</text></g>
+          <g class="node" data-node="umbilical"><rect x="392" y="330" width="116" height="60" rx="9"/>
+            <text x="450" y="354" text-anchor="middle">External Umbilical</text>
+            <text x="450" y="370" text-anchor="middle" class="sub">ports 11–12</text></g>
+
+          <g class="node" data-node="cat8"><rect x="478" y="210" width="124" height="52" rx="9"/>
+            <text x="540" y="232" text-anchor="middle">Cat-8 Mesh</text>
+            <text x="540" y="247" text-anchor="middle" class="sub">S/FTP · 40 Gb/s</text></g>
+        </svg>
+        <div class="hint">Green dashed lines are the PoE++ power plane; blue lines are the data plane.</div>
+      </div>
+
+      <div class="panel" id="detail">
+        <p class="dsub" id="dSub">// select a node</p>
+        <h3 class="dh" id="dHead">New Body Topology</h3>
+        <div class="dbody" id="dBody">
+          <p>Every subsystem of the surrogate rides a single Cat-8 nervous-system mesh,
+          marshaled through the lower-base patch panel and powered over the same cabling
+          by PoE++. The <b>Human Twin</b> overlays the anatomical + cognitive model onto
+          ports 13 and above, so the living emulation shares the identical link layer.</p>
+          <p class="muted">Pick a node on the left to drill into its specification.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2 NERVOUS ============ -->
+  <section class="block" id="nervous">
+    <h2 class="h"><span class="num">02</span>Nervous System Emulation — Cat-8 Array</h2>
+    <p class="lead">The surrogate's nervous system is a Category 8 (Cat-8) copper topology
+    configured exclusively for high-frequency <b>40GBASE-T</b>. It maps data transmission
+    directly against sub-millisecond sensory demands, isolating delicate compute from
+    kinetic, magnetic, and thermal stress.</p>
+
+    <div class="grid3">
+      <div class="card"><span class="ic">⚡</span><h4>Throughput Ceiling</h4>
+        <p>40 Gbps at a 2,000 MHz (2 GHz) bus width — matched to micro-sensory capture speeds
+        with zero packet-queue buffering.</p></div>
+      <div class="card"><span class="ic">⏱️</span><h4>Latency Control</h4>
+        <p>Eliminates network-level serialization delays for spatial tracking, facial sync,
+        and haptic telemetry without buffer interference.</p></div>
+      <div class="card"><span class="ic">🛡️</span><h4>EMI Isolation</h4>
+        <p>Strict S/FTP construction: foil-wrapped pairs inside an overall braided sleeve,
+        blocking corruption from cooling pumps and high-draw logic.</p></div>
+    </div>
+
+    <h3 class="h3">Geometric Distance Containment</h3>
+    <p>All interior runs are locked <b>under 30 m (98 ft)</b>. Past that limit the link
+    silently down-negotiates to 10 Gbps — the calculator below shows this live.</p>
+
+    <div class="panel">
+      <h3 class="h3" style="margin-top:0">Cat-8 Link Calculator</h3>
+      <div class="calc">
+        <div>
+          <div class="field">
+            <label>Link length <b><span id="lenVal">4.5</span> m</b></label>
+            <input type="range" id="len" min="0.5" max="60" step="0.5" value="4.5">
+          </div>
+          <div class="field">
+            <label>Payload size <b><span id="payVal">64</span> B</b></label>
+            <input type="range" id="pay" min="8" max="1500" step="8" value="64">
+          </div>
+          <div class="field">
+            <label>Shielded (S/FTP) <b id="shdVal">YES</b></label>
+            <input type="range" id="shd" min="0" max="1" step="1" value="1">
+          </div>
+        </div>
+        <div>
+          <div class="readout">
+            <div class="metric"><div class="mk">Negotiated Rate</div>
+              <div class="mv accent" id="rate">40 Gb/s</div><div class="mu">40GBASE-T</div></div>
+            <div class="metric"><div class="mk">Serialization Latency</div>
+              <div class="mv" id="lat">0.013 µs</div><div class="mu">per frame</div></div>
+            <div class="metric"><div class="mk">Geometric Limit</div>
+              <div class="mv good" id="geo">OK</div><div class="mu">≤ 30 m</div></div>
+            <div class="metric"><div class="mk">EMI Isolation</div>
+              <div class="mv good" id="emi">OK</div><div class="mu">S/FTP shield</div></div>
+          </div>
+          <div class="gauge"><span id="rateBar" style="width:100%"></span></div>
+          <div class="note ok" id="catNote">Full 40 Gbps operation — within 30 m, shielded.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3 PATCH ============ -->
+  <section class="block" id="patch">
+    <h2 class="h"><span class="num">03</span>Centralized Patch Panel Layout</h2>
+    <p>To preserve space in the upper chassis and protect components from cable strain, every
+    sensory connection is marshaled through a grounded, high-density <b>12-port mini-patch
+    panel</b> in the lower structural base frame. Ports 1–12 are the canonical base chassis;
+    ports 13+ are reserved for research subsystems and the Human Twin.</p>
+
+    <table class="t">
+      <thead><tr><th>Port ID</th><th>Subsystem Node</th><th>Sensor / Interface Array</th>
+        <th>Protocol</th><th>Power Profile</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">01–02</td><td>Head &amp; Sensory Node</td>
+          <td>HD Face-Tracking Cameras &amp; Spatial Microphones</td><td class="mono">40GBASE-T</td>
+          <td><span class="tag">PoE++ Type 4 ≤30W</span></td></tr>
+        <tr><td class="mono">03–06</td><td>Upper Torso &amp; Kinetic</td>
+          <td>Haptic Feedback Arrays &amp; Expression Servo Controllers</td><td>
+          <td class="mono">40GBASE-T</td><td><span class="tag">PoE++ Type 4 ≤90W</span></td></tr>
+        <tr><td class="mono">07–08</td><td>Lower Base &amp; Rig</td>
+          <td>Placing-Rig Alignment Encoders &amp; Frame Security Interlocks</td>
+          <td class="mono">40GBASE-T</td><td><span class="tag">PoE++ Type 4 ≤15W</span></td></tr>
+        <tr><td class="mono">09–10</td><td>Environmental Matrix</td>
+          <td>Liquid-Cooling Thermal Telemetry &amp; Lung-Style Intake Fans</td>
+          <td class="mono">40GBASE-T</td><td><span class="tag">PoE++ Type 4 ≤90W</span></td></tr>
+        <tr><td class="mono">11–12</td><td>External Umbilical</td>
+          <td>High-Speed Remote Uplink to Workstation Hub</td>
+          <td class="mono">40GBASE-T</td><td><span class="tag">Unpowered (data)</span></td></tr>
+        <tr><td class="mono">13+</td><td>R&amp;D &amp; Human Twin</td>
+          <td>Registered research subsystems + body/mind modules</td>
+          <td class="mono">40GBASE-T</td><td><span class="tag">PoE++ (research)</span></td></tr>
+      </tbody>
+    </table>
+    <div class="note">Extension point: R&amp;D teams register additional nodes via
+      <code>register_subsystem()</code> without editing core code — the panel rebuilds
+      automatically (capped at 48 ports, no overlapping ranges).</div>
+  </section>
+
+  <!-- ============ 4 CHASSIS ============ -->
+  <section class="block" id="chassis">
+    <h2 class="h"><span class="num">04</span>3D-Printed Mini-Chassis Integration</h2>
+    <p>The 10-inch form-factor mini-patch panel is housed in a custom enclosure integrated
+    into the lower base frame, tailored for standard 3D-printing tolerances.</p>
+    <div class="grid3">
+      <div class="card"><span class="ic">↔️</span><h4>Slide-Out Rail Track</h4>
+        <p>Dual-lip slide track lets the patch core slide fully outward for toolless access
+        to rear keystone terminators during maintenance.</p></div>
+      <div class="card"><span class="ic">⬡</span><h4>Hexagonal Ventilation</h4>
+        <p>Algorithmic, non-deforming hexagonal lattice across the back wall optimizes plastic
+        weight distribution and exhausts active 40GBASE-T NIC heat.</p></div>
+      <div class="card"><span class="ic">⚠️</span><h4>ESD Grounding</h4>
+        <p>Internal metal backing bar bonded to a 10AWG copper drain wire routes static
+        straight to earth ground, protecting the i5 core and GPUs.</p></div>
+    </div>
+    <pre class="diagram">        ┌───────────────────────────────┐  10" form factor
+        │  ░░░░░░░░░ HEX VENT ░░░░░░░░░  │  non-deforming lattice
+        │  ┌─────────────────────────┐  │
+        │  │  Patch Core (slides →)  │◄─┼── dual-lip rail
+        │  └─────────────────────────┘  │
+        │  ▓ metal backing bar ▓        │
+        └──────────┬────────────────────┘
+           10AWG   │  → earth ground (ESD)
+        </pre>
+  </section>
+
+  <!-- ============ 5 POE ============ -->
+  <section class="block" id="poe">
+    <h2 class="h"><span class="num">05</span>PoE++ Power Delivery — IEEE 802.3bt</h2>
+    <p>To avoid massive parallel DC wiring looms, power is layered entirely over the Cat-8
+    data lines using <b>IEEE 802.3bt (PoE++ Type 4)</b> — up to <b>90 W</b> per line, with
+    localized splitters dropping to clean 5 V / 12 V regulated rails at each sensory zone.</p>
+
+    <div class="diagram">[PoE++ Injector / Switch in Base] ──(90W + 40 Gbps over S/FTP Cat-8)──▶ [Shielded Keystone]
+                                                                                                │
+                                                                                 [Localized Terminal Splitter]
+                                                                                    /                       \
+                                                               (40 Gbps Raw Data to Node)       (DC Power to Actuators)
+    </div>
+
+    <h3 class="h3">Power Budget Calculator (per line · 90 W ceiling)</h3>
+    <div class="panel">
+      <div id="slices"></div>
+      <div class="readout" style="margin-top:14px">
+        <div class="metric"><div class="mk">Lines Budgeted</div>
+          <div class="mv" id="poeLines">4</div><div class="mu">independent PoE++ lines</div></div>
+        <div class="metric"><div class="mk">Aggregate Draw</div>
+          <div class="mv accent" id="poeTotal">225 W</div><div class="mu">across all lines</div></div>
+        <div class="metric"><div class="mk">Per-line Status</div>
+          <div class="mv good" id="poeStatus">Balanced</div><div class="mu">≤ 90 W each</div></div>
+      </div>
+      <div class="note ok" id="poeNote">Each line within the 90 W Type-4 ceiling. Servo and
+        pump lines run isolated from the main PC PSU.</div>
+    </div>
+    <div class="grid3" style="margin-top:6px">
+      <div class="card"><h4>Kinetic Servo Isolation</h4><p>Expression/gesture servos receive
+        localized 90 W slices, isolating inductive feedback from main supply lines.</p></div>
+      <div class="card"><h4>Environmental Decoupling</h4><p>Cooling pumps and intake fans run
+        on independent PoE++ rails — thermal containment survives primary restarts.</p></div>
+      <div class="card"><h4>Drop-Down Regulation</h4><p>Compact splitters drop line voltage to
+        regulated, clean 5 V / 12 V rails at the target zones.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 6 TWIN ============ -->
+  <section class="block" id="twin">
+    <h2 class="h"><span class="num">06</span>Human Body · Mind · Nature Twin</h2>
+    <p class="lead">The control plane extends into a <b>structural digital twin</b> of a full
+    human: 11 anatomical body systems (15 organs), 10 cognitive mind modules, and a layer of
+    <b>human nature</b> — each facet bound to a Cat-8 link on the research rig starting at
+    <b>port 13</b>. The twin is ontology + state + telemetry + validation + raw-binary
+    serialization — not a real-time simulation.</p>
+
+    <h3 class="h3">Body Systems &amp; Organs <span class="pill">11 systems</span> <span class="pill">15 organs</span></h3>
+    <div id="sysList"></div>
+
+    <h3 class="h3" style="margin-top:26px">Cognitive Mind Modules <span class="pill">10 modules</span></h3>
+    <div class="mind" id="mindList"></div>
+
+    <h3 class="h3" style="margin-top:30px">Human Nature — Encoded into the Artificial Nervous System
+      <span class="pill">38 constructs</span> <span class="pill">5 groups</span></h3>
+    <p>Human nature is encoded as a normalized weight (0.0–1.0) per construct and rides the
+    <b>same</b> Cat-8 link layer as body and mind. The <b>Instinct</b> group is the
+    survival / reflexive bedrock — the part of human nature wired directly as the surrogate's
+    instinctual substrate (fight · flight · freeze · seeking · attachment · nurturance …).
+    It is serialized as <code>PROTO_NATURE</code> frames, byte-compatible with the Rust core.</p>
+    <div id="natureList"></div>
+
+    <h3 class="h3" style="margin-top:30px">Raw Binary Link Layer</h3>
+    <p>Every organ's vitals, every mind module's activation, and every nature construct's
+    weight serialize into checksummed <code>PROTO_BIOMETRIC</code> /
+    <code>PROTO_COGNITIVE</code> / <code>PROTO_NATURE</code> frames, byte-compatible between
+    the Python and Rust cores (CRC32).</p>
+    <pre class="code">+--------+---------+----------+------+------+-------------+----------+---------+
+| magic  | version | protocol | port |  ts  | payload_len | payload |  crc32  |
+| NB0\x01|    1    |    B     |  H   |  Q   |      H      |   ...    |    I    |
++--------+---------+----------+------+------+-------------+----------+---------+
+  # HumanTwin.emit_frames() → list[bytes]  (one frame per organ + module + nature)</pre>
+  </section>
+
+  <!-- ============ QUEST ============ -->
+  <section class="block" id="quest">
+    <h2 class="h"><span class="num">CQ</span>R&amp;D Contributor Quest</h2>
+    <p class="lead">Contributors are rewarded automatically. Every repository action earns XP
+    that climbs a <b>100-level</b> ladder of research tiers — unlocking status ranks, real
+    repo privileges, and physical/digital prizes. The <a href="game/index.html">playable
+    progression prototype →</a> runs as a pure static page.</p>
+
+    <div class="ladder" id="ladder"></div>
+    <div class="note" style="margin-top:14px">Top of the ladder: <b>106,920 XP</b> to reach
+      Level 100. Privileges (label issues, triage, write access, merge rights, architect seat)
+      and prizes (badge → pin → hoodie → keyboard kit → name on chassis plaque) land on
+      milestone levels. See <code>docs/GAME_DESIGN.md</code>.</div>
+  </section>
+
+  <!-- ============ 7 ARCH ============ -->
+  <section class="block" id="arch">
+    <h2 class="h"><span class="num">07</span>Architecture &amp; Extension</h2>
+    <p>The framework is modeled as a small, typed, dependency-free Python control plane with a
+    Rust core in parity. The design goal is <b>extension, not implementation</b>: R&amp;D
+    entities add sensor suites, power topologies, and chassis variants without forking core
+    logic.</p>
+
+    <pre class="diagram">            ┌──────────────────────────────────────┐
+            │            Surrogate                  │  surrogate.py
+            │   orchestrates + health_check()       │
+            └─────────┬────────────────┬────────────┘
+         ┌────────────┴─────┐     ┌─────┴──────────────┐
+         │   PatchPanel     │     │   PoeDelivery      │  patch_panel.py / poe.py
+         │   (registry)     │     │   (per node)       │
+         └────────┬─────────┘     └────────────────────┘
+              ┌────┴─────┐
+              │ Cat8Link │                                      cat8.py
+              └──────────┘
+         ┌─────────────────────────────────────────┐
+         │   MiniChassis (ESD / vent / rail)        │  chassis.py
+         └─────────────────────────────────────────┘
+            telemetry.py → status/health    cli.py → new-body status|health|explore
+    </pre>
+
+    <ol class="steps">
+      <li><b>Register a subsystem</b> — <code>register_subsystem(SubsystemSpec(...))</code> at
+        import time; ports 1–48, no overlap.</li>
+      <li><b>Bespoke layout</b> — <code>PatchPanelBuilder().add(...).build(link_factory)</code>
+        for non-contiguous or simulated harnesses.</li>
+      <li><b>New power topology</b> — compose <code>PoeDelivery</code>/<code>PoeSlice</code>
+        with different 5 V / 12 V rails, attach to <code>Surrogate.poe</code>.</li>
+      <li><b>Instrumentation hook</b> — replace <code>render_status</code> with a sink to a
+        lab bus (MQTT / WebSocket / CSV); the telemetry dict is the contract.</li>
+      <li><b>Visualize</b> — <code>new-body explore</code> emits an interactive HTML topology
+        generated from the live model.</li>
+    </ol>
+    <p class="muted">Dual-language: Python is the primary API/CLI; Rust is the high-performance
+    core (+ optional PyO3 bridge). When you change an extension point, keep both in parity.</p>
+  </section>
+
+  <!-- ============ 8 START ============ -->
+  <section class="block" id="start">
+    <h2 class="h"><span class="num">08</span>Getting Started</h2>
+    <div class="grid2">
+      <div class="panel tight">
+        <h3 class="h3" style="margin-top:0">Install &amp; CLI</h3>
+        <pre class="code">pip install -e .
+new-body --name Surrogate-01 status
+new-body health
+new-body frame
+new-body human
+new-body explore --out new_body_explorer.html
+new-body-rs human          # Rust CLI</pre>
+      </div>
+      <div class="panel tight">
+        <h3 class="h3" style="margin-top:0">Library</h3>
+        <pre class="code">from new_body.surrogate import Surrogate
+from new_body.body import HumanTwin
+
+s = Surrogate.factory_default()
+print(s.telemetry()); print(s.health_check())
+
+t = HumanTwin.factory_default()
+print(t.summary()); t.emit_frames()</pre>
+      </div>
+    </div>
+    <p class="muted">Tests: <code>pytest</code> · Lint: <code>make lint</code> · Levels:
+      <code>make levels</code> · Rust: <code>cargo test --manifest-path rust/Cargo.toml</code></p>
+  </section>
+
+  <!-- ============ 9 GLOSSARY ============ -->
+  <section class="block" id="glossary">
+    <h2 class="h"><span class="num">09</span>Glossary</h2>
+    <div class="grid2">
+      <div class="card"><h4>Cat-8 / S/FTP</h4><p>Category 8 shielded twisted pair: foil-wrapped
+        pairs in a braided sleeve, rated 40GBASE-T to 30 m.</p></div>
+      <div class="card"><h4>PoE++ (802.3bt Type 4)</h4><p>Power over Ethernet delivering up to
+        90 W per line over the data cabling.</p></div>
+      <div class="card"><h4>Patch Panel</h4><p>The grounded 12-port base marshaling all
+        subsystem links in the lower frame.</p></div>
+      <div class="card"><h4>Mini-Chassis</h4><p>3D-printed 10" enclosure with slide rail,
+        hex vent, and ESD drain to earth.</p></div>
+      <div class="card"><h4>Digital Twin</h4><p>Structural model (ontology + state + telemetry
+        + validation + serialization) of body &amp; mind.</p></div>
+      <div class="card"><h4>Link Layer Frame</h4><p>Compact CRC32-checksummed binary frame
+        carrying sensory/cognitive telemetry over Cat-8.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    New Body · VR/Physical Surrogate Robot Infrastructure Framework · Engineering Design
+    Document v2.0 — Creative Technology Project. Companion to <code>source.html</code> origin.
+  </footer>
+
+</div>
+</main>
 </div>
 
+<script>
+/* ---------------- data for topology detail ---------------- */
+const NODES = {
+  hub:{t:"Workstation Hub",s:"remote uplink · ports 11–12 path",
+    b:"The dedicated workstation that drives the surrogate. It connects only through the <b>External Umbilical</b> (ports 11–12), which is <b>unpowered data-only</b> — all power is injected locally in the base. This keeps the high-draw compute off the rig's internal power plane."},
+  panel:{t:"12-Port Patch Panel",s:"grounded mini-panel · lower base frame",
+    b:"The marshaling point for every sensory node. A grounded, high-density 12-port panel routes all subsystem links over 40GBASE-T. Ports 1–12 are canonical; 13+ host research subsystems and the Human Twin.",
+    ul:["01–02 Head &amp; Sensory","03–06 Upper Torso &amp; Kinetic","07–08 Lower Base &amp; Rig","09–10 Environmental Matrix","11–12 External Umbilical (data)","13+ Research &amp; Human Twin"]},
+  head:{t:"Head &amp; Sensory Node",s:"ports 01–02 · PoE++ ≤30W",
+    b:"High-definition face-tracking cameras and spatial microphones. Lightest power draw of the actuated nodes; requires the lowest-latency path for facial sync.",
+    ul:["Interface: Face cams + spatial mics","Protocol: 40GBASE-T","Power: PoE++ Type 4 ≤ 30 W","Latency class: sub-ms serialization"]},
+  torso:{t:"Upper Torso &amp; Kinetic",s:"ports 03–06 · PoE++ ≤90W",
+    b:"Localized haptic feedback arrays and expression servo controllers. The highest-draw actuated zone — up to 90 W isolated from the main PSU to contain inductive spikes.",
+    ul:["Haptic arrays (ports 03–04)","Expression servos (ports 05–06)","Power: PoE++ Type 4 ≤ 90 W","Isolation: kinetic servo drive decoupled"]},
+  rig:{t:"Lower Base &amp; Rig",s:"ports 07–08 · PoE++ ≤15W",
+    b:"Placing-rig alignment encoders and frame security interlocks. Low power, safety-critical: interlocks must report even during primary restarts.",
+    ul:["Alignment encoders","Frame security interlocks","Power: PoE++ Type 4 ≤ 15 W","Role: structural safety"]},
+  env:{t:"Environmental Matrix",s:"ports 09–10 · PoE++ ≤90W",
+    b:"Liquid-cooling thermal telemetry and lung-style intake fans. Runs on an independent PoE++ rail so thermal containment survives primary system restarts.",
+    ul:["Liquid-cooling pumps","Intake fans","Power: PoE++ Type 4 ≤ 90 W","Decoupled environmental loop"]},
+  injector:{t:"PoE++ Injector / Switch",s:"90 W per line · base",
+    b:"The power plane source. Injects up to 90 W per Cat-8 line alongside 40 Gbps data. Each line is carved into localized <b>PoeSlice</b> rails (5 V / 12 V) at terminal splitters.",
+    ul:["Standard: IEEE 802.3bt Type 4","Ceiling: 90 W / line","Splitter: data + DC at node","Regulated rails: 5 V / 12 V"]},
+  cat8:{t:"Cat-8 Nervous-System Mesh",s:"S/FTP · 40 Gb/s · ≤30 m",
+    b:"The surrogate's nervous system. S/FTP shielding isolates EMI from pumps and logic. Links beyond 30 m down-negotiate to 10 Gbps. See the calculator in §02.",
+    ul:["Throughput: 40 Gbps @ ≤30 m","Bus: 2000 MHz","EMI: S/FTP foil + braid","Limit: geometric 30 m containment"]},
+  chassis:{t:"Mini-Chassis",s:"slide rail · hex vent · ESD",
+    b:"The 10-inch 3D-printed enclosure in the lower base frame. Houses the patch core on a dual-lip slide rail, exhausts NIC heat through a hex lattice, and drains static to earth via a 10AWG wire.",
+    ul:["Toolless slide-out rail","Hexagonal ventilation lattice","ESD: metal bar → 10AWG → earth","Form factor: 10-inch"]},
+  twin:{t:"Human Body &amp; Mind Twin",s:"ports 13+ · 11 systems · 10 modules",
+    b:"The digital twin overlays a full human onto the rig: 11 anatomical systems (15 organs) and 10 cognitive modules, each bound to a Cat-8 link. Serialized as PROTO_BIOMETRIC / PROTO_COGNITIVE frames.",
+    ul:["11 body systems","10 mind modules","Ports 13+","Raw frames: body + mind telemetry"]},
+  umbilical:{t:"External Umbilical",s:"ports 11–12 · unpowered data",
+    b:"The high-speed remote uplink to the workstation hub. Data-only — no PoE — keeping the rig's internal power plane isolated from the external driver.",
+    ul:["Ports 11–12","Protocol: 40GBASE-T","Power: Unpowered (data only)","Path: rig ↔ workstation"]}
+};
+function showNode(id){
+  const n=NODES[id]; if(!n) return;
+  document.querySelectorAll('.topo .node').forEach(g=>g.classList.toggle('sel',g.dataset.node===id));
+  document.getElementById('dHead').innerHTML=n.t;
+  document.getElementById('dSub').textContent='// '+n.s;
+  let html=n.b;
+  if(n.ul){html+='<ul>'+n.ul.map(x=>'<li>'+x+'</li>').join('')+'</ul>';}
+  document.getElementById('dBody').innerHTML=html;
+}
+document.querySelectorAll('.topo .node').forEach(g=>{
+  g.addEventListener('click',()=>showNode(g.dataset.node));
+});
+
+/* ---------------- Cat-8 calculator ---------------- */
+const MAX_T=40, MAX_D=30;
+function catCalc(){
+  const len=parseFloat(len_.value), pay=parseInt(pay_.value),
+        shd=parseInt(shd_.value)===1;
+  lenVal.textContent=len; payVal.textContent=pay; shdVal.textContent=shd?'YES':'NO';
+  const over=len>MAX_D;
+  const rate=over?10:MAX_T;
+  const lat=(pay*8)/(rate*1000); // µs
+  rate_.textContent=rate+' Gb/s';
+  lat_.textContent=lat.toFixed(3)+' µs';
+  geo_.textContent=over?'OVER':'OK'; geo_.className='mv '+(over?'bad':'good');
+  emi_.textContent=shd?'OK':'RISK'; emi_.className='mv '+(shd?'good':'bad');
+  rateBar.style.width=(rate/MAX_T*100)+'%';
+  let note=document.getElementById('catNote');
+  if(over){note.className='note warn';
+    note.textContent='Down-negotiated to 10 Gbps — link exceeds the 30 m geometric limit.';}
+  else if(!shd){note.className='note warn';
+    note.textContent='Unshielded pair: exposed to EMI from pumps/logic. Use S/FTP.';}
+  else{note.className='note ok';
+    note.textContent='Full 40 Gbps operation — within 30 m, shielded.';}
+}
+const len_=document.getElementById('len'),pay_=document.getElementById('pay'),shd_=document.getElementById('shd');
+const lenVal=document.getElementById('lenVal'),payVal=document.getElementById('payVal'),shdVal=document.getElementById('shdVal');
+const rate_=document.getElementById('rate'),lat_=document.getElementById('lat'),geo_=document.getElementById('geo'),emi_=document.getElementById('emi'),rateBar=document.getElementById('rateBar');
+[len_,pay_,shd_].forEach(el=>el.addEventListener('input',catCalc));
+catCalc();
+
+/* ---------------- PoE budget calculator ---------------- */
+const POE=[
+  {nm:"Head & Sensory",rail:"5 V",w:30},
+  {nm:"Upper Torso",rail:"12 V",w:90},
+  {nm:"Lower Base & Rig",rail:"5 V",w:15},
+  {nm:"Environmental",rail:"12 V",w:90}
+];
+const CEIL=90;
+function poeRender(){
+  const box=document.getElementById('slices'); box.innerHTML='';
+  let total=0, bad=false;
+  POE.forEach((p,i)=>{
+    total+=p.w; if(p.w>CEIL) bad=true;
+    const row=document.createElement('div'); row.className='slice';
+    row.innerHTML=`<div class="nm">${p.nm}<div class="rl">rail ${p.rail}</div></div>`+
+      `<input type="range" min="0" max="120" step="1" value="${p.w}" data-i="${i}">`+
+      `<div class="val">${p.w} W</div>`;
+    box.appendChild(row);
+    row.querySelector('input').addEventListener('input',e=>{
+      POE[i].w=parseInt(e.target.value,10);
+      poeRender();
+    });
+  });
+  document.getElementById('poeLines').textContent=POE.length;
+  document.getElementById('poeTotal').textContent=total+' W';
+  const st=document.getElementById('poeStatus');
+  st.textContent=bad?'Over budget':'Balanced';
+  st.className='mv '+(bad?'bad':'good');
+  const note=document.getElementById('poeNote');
+  if(bad){note.className='note warn';
+    note.textContent='A line exceeds the 90 W Type-4 ceiling — splitter would fault. Rebalance the slices.';}
+  else{note.className='note ok';
+    note.textContent='Each line within the 90 W Type-4 ceiling. Servo and pump lines isolated from main PC PSU.';}
+}
+poeRender();
+
+/* ---------------- build twin + ladder from JSON ---------------- */
+fetch('game/levels.js').then(r=>r.ok?r.text():null).then(txt=>{
+  if(!txt) return;
+  try{
+    const LEVELS=JSON.parse(txt.replace('window.LEVELS =','').replace(/;\s*$/,''));
+    const lad=document.getElementById('ladder');
+    let last=null;
+    LEVELS.forEach(L=>{
+      if(L.tier!==last){
+        last=L.tier;
+        const cls='rank-'+L.rank.replace(/\s|II/g,m=>m===' '?'':m);
+        const el=document.createElement('div'); el.className='rung';
+        el.innerHTML=`<div class="lv">L ${L.level}${L.level<100?'–'+(L.level+9):''}</div>`+
+          `<div class="tn">${L.tier}</div><div class="rk ${cls}">${L.rank}</div>`;
+        lad.appendChild(el);
+      }
+    });
+  }catch(e){}
+}).catch(()=>{});
+
+/* ---------------- scroll-spy nav ---------------- */
+const navLinks=[...document.querySelectorAll('nav.side a.nav')];
+const ids=navLinks.map(a=>a.getAttribute('href').slice(1));
+const secs=ids.map(id=>document.getElementById(id)).filter(Boolean);
+function spy(){
+  let cur=secs[0]?.id;
+  const y=window.scrollY+120;
+  secs.forEach(s=>{ if(s.offsetTop<=y) cur=s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+}
+window.addEventListener('scroll',spy,{passive:true}); spy();
+
+/* ---------------- mobile menu ---------------- */
+const side=document.getElementById('side'),bd=document.getElementById('backdrop');
+document.getElementById('menuBtn').addEventListener('click',()=>{
+  side.classList.toggle('open'); bd.classList.toggle('show');
+});
+bd.addEventListener('click',()=>{side.classList.remove('open');bd.classList.remove('show');});
+navLinks.forEach(a=>a.addEventListener('click',()=>{side.classList.remove('open');bd.classList.remove('show');}));
+
+/* ---------------- human twin data (mirrors body.py blueprint) ---------------- */
+const SYS=[
+ ["Integumentary (Skin)",[["Skin",[["temperature",36.5,"C"],["hydration",70,"%"]]]]],
+ ["Skeletal",[["Skeleton",[["bmd_tscore",-1.0,"T"]]]]],
+ ["Muscular",[["Skeletal Muscle",[["tone",0.72,"idx"],["fatigue",0.12,"idx"]]]]],
+ ["Nervous (Cat-8 Core)",[["Brain",[["cortical_activity",0.82,"idx"]]],["Spinal Cord",[["conduction_latency",5.0,"ms"]]]]],
+ ["Endocrine",[["Pancreas",[["insulin",10.0,"uU/mL"]]],["Thyroid",[["tsh",2.0,"mIU/L"]]]]],
+ ["Cardiovascular",[["Heart",[["heart_rate",72,"bpm"],["systolic_bp",118,"mmHg"]]],["Vasculature",[["perfusion",0.92,"idx"]]]]],
+ ["Immune / Lymphatic",[["Immune System",[["wbc",7.0,"10^9/L"]]]]],
+ ["Respiratory",[["Lungs",[["resp_rate",14,"/min"],["spo2",98,"%"]]]]],
+ ["Digestive",[["Stomach",[["ph",2.0,"pH"]]],["Liver",[["alt",25,"U/L"]]]]],
+ ["Renal / Urinary",[["Kidneys",[["gfr",95,"mL/min"],["creatinine",0.9,"mg/dL"]]]]],
+ ["Reproductive",[["Gonads",[["hormone_index",1.0,"idx"]]]]]
+];
+const SYS_RANGE={
+ "temperature":[36,37.5],"hydration":[60,80],"bmd_tscore":[-2.5,1.0],"tone":[0.4,1.0],
+ "fatigue":[0,0.6],"cortical_activity":[0.4,1.0],"conduction_latency":[2,10],"insulin":[2,25],
+ "tsh":[0.4,4],"heart_rate":[60,100],"systolic_bp":[90,120],"perfusion":[0.7,1.0],"wbc":[4,11],
+ "resp_rate":[12,20],"spo2":[95,100],"ph":[1.5,3.5],"alt":[7,56],"gfr":[60,140],"creatinine":[0.6,1.2],
+ "hormone_index":[0.5,1.5]
+};
+function sysRender(){
+  const box=document.getElementById('sysList'); box.innerHTML='';
+  SYS.forEach(([name,organs])=>{
+    const o=organs.map(([on,vits])=>{
+      const v=vits.map(([vn,vv,u])=>{
+        const r=SYS_RANGE[vn]; const ok=r? (vv>=r[0]&&vv<=r[1]):true;
+        return `<div class="ov">${vn} ${vv}${u} <span class="${ok?'in':''}">${ok?'✓':'✗'}</span></div>`;
+      }).join('');
+      return `<div class="organ"><div class="on">${on}</div>${v}</div>`;
+    }).join('');
+    box.insertAdjacentHTML('beforeend',
+      `<div class="sys"><div class="sname">${name}<span class="sstat">nominal</span></div>`+
+      `<div class="organs">${o}</div></div>`);
+  });
+}
+sysRender();
+
+const MIND=[
+ ["Perception",0.85],["Attention",0.80],["Memory",0.82],["Learning",0.70],
+ ["Emotion / Affect",0.60],["Executive Function",0.83],["Language",0.88],
+ ["Motor Planning",0.90],["Consciousness / Arousal",0.95],["Social Cognition",0.75]
+];
+function mindRender(){
+  const box=document.getElementById('mindList');
+  box.innerHTML=MIND.map(([n,a])=>
+    `<div class="mcard"><div class="mn">${n}</div>`+
+    `<div class="ml">activation</div><div class="ma"><span style="width:${a*100}%"></span></div></div>`
+  ).join('');
+}
+mindRender();
+
+const NATURE=[
+ ["Instinct",[["Fight",0.62],["Flight",0.70],["Freeze",0.55],["Seeking",0.88],["Attachment",0.82],
+   ["Aversion",0.75],["Nurturance",0.80],["Dominance",0.58],["Submission",0.60],["Play",0.66],
+   ["Homeostasis",0.90],["Curiosity",0.85]]],
+ ["Temperament (Big Five)",[["Openness",0.82],["Conscientiousness",0.75],["Extraversion",0.60],
+   ["Agreeableness",0.77],["Neuroticism",0.35]]],
+ ["Value Orientation",[["Self-Direction",0.85],["Stimulation",0.70],["Hedonism",0.65],
+   ["Achievement",0.78],["Power",0.55],["Security",0.80],["Conformity",0.60],["Tradition",0.58],
+   ["Benevolence",0.86],["Universalism",0.83]]],
+ ["Moral Foundations",[["Care / Harm",0.88],["Fairness / Cheating",0.84],["Loyalty / Betrayal",0.72],
+   ["Authority / Subversion",0.64],["Sanctity / Degradation",0.60]]],
+ ["Higher Nature",[["Creativity",0.84],["Imagination",0.82],["Empathy",0.87],
+   ["Narrative Identity",0.80],["Mortality Awareness",0.74],["Meaning / Purpose",0.85]]]
+];
+function natureRender(){
+  const box=document.getElementById('natureList'); box.innerHTML='';
+  NATURE.forEach(([g,items])=>{
+    const chips=items.map(([n,v])=>
+      `<div class="mcard"><div class="mn">${n}</div>`+
+      `<div class="ma"><span style="width:${v*100}%"></span></div>`+
+      `<div class="ml" style="margin-top:4px">${v.toFixed(2)}</div></div>`).join('');
+    const tag = g==="Instinct" ? ` <span class="pill" style="background:#33280c;color:var(--gold);border-color:#5c4a16">encoded substrate</span>` : "";
+    box.insertAdjacentHTML('beforeend',
+      `<div class="sys"><div class="sname">${g}${tag}</div><div class="mind">${chips}</div></div>`);
+  });
+}
+natureRender();
+</script>
 </body>
 </html>

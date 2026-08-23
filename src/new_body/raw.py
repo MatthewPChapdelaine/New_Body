@@ -28,6 +28,7 @@ PROTO_THERMAL = 3
 PROTO_UPLINK = 4
 PROTO_BIOMETRIC = 5  # human body-system telemetry
 PROTO_COGNITIVE = 6  # mind / cognitive-module telemetry
+PROTO_NATURE = 7  # human nature constructs (drives, values, moral, higher)
 
 _HEADER = struct.Struct("<4sBBHQH")  # magic, version, protocol, port, ts, payload_len
 _CRC = struct.Struct("<I")

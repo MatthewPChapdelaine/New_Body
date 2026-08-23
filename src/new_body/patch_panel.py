@@ -15,7 +15,8 @@ from .cat8 import Cat8Link
 
 LinkFactory = Callable[[int], Cat8Link]
 
-MAX_PORTS = 48  # research rigs may exceed the canonical 12-port base chassis
+MAX_PORTS = 128  # research rigs may exceed the canonical 12-port base chassis;
+# the full digital twin (body + mind + human nature) spans well beyond 48.
 
 
 @dataclass(frozen=True)

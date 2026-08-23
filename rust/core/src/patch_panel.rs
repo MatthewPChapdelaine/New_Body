@@ -13,7 +13,8 @@ use serde::Serialize;
 
 use crate::cat8::Cat8Link;
 
-pub const MAX_PORTS: u32 = 48; // research rigs may exceed the 12-port base
+pub const MAX_PORTS: u32 = 128; // research rigs may exceed the 12-port base;
+// the full digital twin (body + mind + human nature) spans well beyond 48.
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SubsystemSpec {

@@ -16,6 +16,7 @@ pub const PROTO_THERMAL: u8 = 3;
 pub const PROTO_UPLINK: u8 = 4;
 pub const PROTO_BIOMETRIC: u8 = 5; // human body-system telemetry
 pub const PROTO_COGNITIVE: u8 = 6; // mind / cognitive-module telemetry
+pub const PROTO_NATURE: u8 = 7; // human nature constructs (drives/values/moral)
 
 const HEADER_SIZE: usize = 4 + 1 + 1 + 2 + 8 + 2; // magic..payload_len
 const MIN_SIZE: usize = HEADER_SIZE + 4; // + crc32

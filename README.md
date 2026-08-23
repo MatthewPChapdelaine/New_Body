@@ -59,6 +59,9 @@ new-body frame
 # Emulate the full human body & mind as a structural digital twin
 new-body human
 
+# Generate an interactive HTML explorer from the live model
+new-body explore --out new_body_explorer.html
+
 # Rust CLI equivalent
 new-body-rs human
 ```
@@ -76,20 +79,41 @@ print(s.health_check())   # [] when nominal
 ### Human body & mind digital twin
 
 `new_body.body` extends the surrogate control plane into an 11-system,
-10-module anatomical + cognitive model. Each organ and mind module is bound to
-a Cat-8 link on the research rig (ports 13+) and can be serialized into the raw
-binary link layer (`PROTO_BIOMETRIC` / `PROTO_COGNITIVE`).
+10-module anatomical + cognitive model, plus a **human-nature** layer of 33
+encoded constructs across 5 groups. The first group, **Instinct**, is the
+survival/reflexive bedrock (fight · flight · freeze · seeking · attachment …)
+wired directly as the surrogate's instinctual substrate. Each organ, mind
+module, and nature construct is bound to a Cat-8 link on the research rig
+(ports 13+) and serialized into the raw binary link layer
+(`PROTO_BIOMETRIC` / `PROTO_COGNITIVE` / `PROTO_NATURE`).
 
 ```python
 from new_body.body import HumanTwin
 
 twin = HumanTwin.factory_default("Human-01")
-print(twin.summary())          # body systems, mind modules, status
+print(twin.summary())          # body systems, mind modules, nature, status
 print(twin.is_healthy())       # True for the canonical twin
+print(twin.nature.by_group("Instinct"))   # the encoded instinctual substrate
 frames = twin.emit_frames()    # raw Cat-8 frames over the link layer
 ```
 
 The Rust core mirrors this exactly (`new_body_core::body::HumanTwin`).
+
+### Interactive explorer
+
+`new-body explore` renders the running control plane (and optional twin) into a
+self-contained, dependency-free HTML page with a clickable topology, live Cat-8
+and PoE++ calculators, and the full subsystem / twin tables — the same model
+the library validates, shown intuitively.
+
+```python
+from new_body.visualize import render_explorer, write_explorer
+from new_body.surrogate import Surrogate
+from new_body.body import HumanTwin
+
+html = render_explorer(Surrogate.factory_default(), HumanTwin.factory_default())
+write_explorer("new_body_explorer.html")  # writes to disk
+```
 
 ## Tests
 

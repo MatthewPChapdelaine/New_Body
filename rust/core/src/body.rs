@@ -11,7 +11,7 @@ use serde::Serialize;
 
 use crate::cat8::Cat8Link;
 use crate::patch_panel::{base_specs, PatchPanel, SubsystemSpec};
-use crate::raw::{Frame, PROTO_BIOMETRIC, PROTO_COGNITIVE};
+use crate::raw::{Frame, PROTO_BIOMETRIC, PROTO_COGNITIVE, PROTO_NATURE};
 use crate::surrogate::Surrogate;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -154,12 +154,68 @@ impl MindModule {
     }
 }
 
+/// A single encoded facet of human nature, bound to a Cat-8 link. Human nature
+/// (the instinctual and valuative substrate beneath mind) is encoded as a
+/// normalized weight and rides the same artificial nervous system as body/mind.
+#[derive(Debug, Clone, Serialize)]
+pub struct NatureConstruct {
+    pub id: String,
+    pub name: String,
+    pub group: String,
+    pub value: f32,
+    pub description: String,
+    pub port: Option<u32>,
+    pub link: Option<Cat8Link>,
+}
+
+impl NatureConstruct {
+    pub fn validate(&self) -> Vec<String> {
+        let mut issues = Vec::new();
+        if !(0.0..=1.0).contains(&self.value) {
+            issues.push(format!(
+                "{}: nature weight {} out of range 0..1",
+                self.name, self.value
+            ));
+        }
+        if let Some(link) = &self.link {
+            issues.extend(link.validate());
+        }
+        issues
+    }
+}
+
+/// The encoded human nature layer of the digital twin.
+#[derive(Debug, Clone, Serialize)]
+pub struct HumanNature {
+    pub name: String,
+    pub constructs: Vec<NatureConstruct>,
+}
+
+impl HumanNature {
+    pub fn by_group(&self, group: &str) -> Vec<&NatureConstruct> {
+        self.constructs.iter().filter(|c| c.group == group).collect()
+    }
+
+    pub fn validate(&self) -> Vec<String> {
+        let mut issues = Vec::new();
+        for c in &self.constructs {
+            issues.extend(c.validate());
+        }
+        issues
+    }
+
+    pub fn is_healthy(&self) -> bool {
+        self.validate().is_empty()
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct HumanTwin {
     pub name: String,
     pub surrogate: Surrogate,
     pub systems: Vec<BodySystem>,
     pub mind: Vec<MindModule>,
+    pub nature: HumanNature,
 }
 
 impl HumanTwin {
@@ -244,6 +300,39 @@ impl HumanTwin {
             .unwrap(),
         );
 
+        let nature_start = next_port;
+        let mut nature = HumanNature {
+            name: format!("{name}-nature"),
+            constructs: Vec::new(),
+        };
+        for (_gid, gname, constructs) in nature_blueprint() {
+            for (cid, cname, val, desc) in constructs {
+                let port = next_port;
+                next_port += 1;
+                let link = Cat8Link::new(format!("cat8-{port:02}"), 2.0);
+                nature.constructs.push(NatureConstruct {
+                    id: cid.to_string(),
+                    name: cname.to_string(),
+                    group: gname.to_string(),
+                    value: val,
+                    description: desc.to_string(),
+                    port: Some(port),
+                    link: Some(link),
+                });
+            }
+        }
+        specs.push(
+            SubsystemSpec::new(
+                "Human Nature",
+                "Encoded human nature (instinct/values/moral/higher)",
+                "40GBASE-T",
+                Some("PoE++ Type 4 (Up to 90W)"),
+                nature_start,
+                next_port - 1,
+            )
+            .unwrap(),
+        );
+
         surrogate.patch_panel =
             PatchPanel::from_specs(&specs, |pid| Cat8Link::new(format!("cat8-{pid:02}"), 2.0));
 
@@ -252,6 +341,7 @@ impl HumanTwin {
             surrogate,
             systems,
             mind,
+            nature,
         }
     }
 
@@ -263,6 +353,7 @@ impl HumanTwin {
         for m in &self.mind {
             issues.extend(m.validate());
         }
+        issues.extend(self.nature.validate());
         issues.extend(self.surrogate.health_check());
         issues
     }
@@ -301,6 +392,17 @@ impl HumanTwin {
                 .encode(),
             );
         }
+        for c in &self.nature.constructs {
+            frames.push(
+                Frame {
+                    protocol: PROTO_NATURE,
+                    port: c.port.unwrap_or(0) as u16,
+                    timestamp_us: 0,
+                    payload: c.value.to_le_bytes().to_vec(),
+                }
+                .encode(),
+            );
+        }
         frames
     }
 
@@ -322,12 +424,14 @@ impl HumanTwin {
             "== Human Digital Twin :: {} ==\n\
              Body systems : {}  ({} organs)\n\
              Mind modules : {}\n\
+             Human nature : {} constructs\n\
              Surrogate    : {} ports on the Cat-8 mesh\n\
              Status       : {}",
             self.name,
             self.systems.len(),
             organs,
             self.mind.len(),
+            self.nature.constructs.len(),
             self.surrogate.patch_panel.ports.len(),
             status
         )
@@ -475,8 +579,7 @@ fn human_blueprint() -> Vec<SystemSpec> {
 
 type MindSpec = (MindModuleId, &'static str, f32, BodySystemId, &'static str);
 
-fn mind_blueprint() -> Vec<MindSpec> {
-    vec![
+fn mind_blueprint() -> Vec<MindSpec> {    vec![
         (
             MindModuleId::Perception,
             "Perception",
@@ -550,6 +653,86 @@ fn mind_blueprint() -> Vec<MindSpec> {
     ]
 }
 
+type NatureSpec = (&'static str, &'static str, Vec<NatureFacet>);
+type NatureFacet = (&'static str, &'static str, f32, &'static str);
+
+/// Encoded human nature. The first group, `instinct`, is the survival /
+/// instinctual bedrock encoded directly as the surrogate's reflexive
+/// substrate; the remaining groups layer temperament, values, moral
+/// foundations, and higher-order nature on top.
+fn nature_blueprint() -> Vec<NatureSpec> {
+    vec![
+        (
+            "instinct",
+            "Instinct",
+            vec![
+                ("fight", "Fight", 0.62, "Confrontational defense response"),
+                ("flight", "Flight", 0.70, "Withdrawal from perceived threat"),
+                ("freeze", "Freeze", 0.55, "Immobilization under overwhelm"),
+                ("seeking", "Seeking", 0.88, "Appetitive exploration drive (Panksepp)"),
+                ("attachment", "Attachment", 0.82, "Bonding & proximity maintenance"),
+                ("aversion", "Aversion", 0.75, "Withdrawal from noxious stimuli"),
+                ("nurturance", "Nurturance", 0.80, "Care-giving toward the vulnerable"),
+                ("dominance", "Dominance", 0.58, "Assertion of status / control"),
+                ("submission", "Submission", 0.60, "Yielding to higher status"),
+                ("play", "Play", 0.66, "Intrinsic, non-instrumental exploration"),
+                ("homeostasis", "Homeostasis", 0.90, "Regulation toward equilibrium"),
+                ("curiosity", "Curiosity", 0.85, "Information-seeking instinct"),
+            ],
+        ),
+        (
+            "temperament",
+            "Temperament (Big Five)",
+            vec![
+                ("openness", "Openness", 0.82, "Receptivity to novelty & experience"),
+                ("conscientiousness", "Conscientiousness", 0.75, "Order, duty, goal-direction"),
+                ("extraversion", "Extraversion", 0.60, "Orientation to external stimulation"),
+                ("agreeableness", "Agreeableness", 0.77, "Prosocial & cooperative tendency"),
+                ("neuroticism", "Neuroticism", 0.35, "Reactivity to negative affect"),
+            ],
+        ),
+        (
+            "values",
+            "Value Orientation",
+            vec![
+                ("self_direction", "Self-Direction", 0.85, "Autonomy of thought & action"),
+                ("stimulation", "Stimulation", 0.70, "Novelty, challenge, excitement"),
+                ("hedonism", "Hedonism", 0.65, "Pleasure & sensuous gratification"),
+                ("achievement", "Achievement", 0.78, "Personal success per social standards"),
+                ("power", "Power", 0.55, "Dominance & control over resources"),
+                ("security", "Security", 0.80, "Safety, stability, order of environment"),
+                ("conformity", "Conformity", 0.60, "Restraint of impulses per norms"),
+                ("tradition", "Tradition", 0.58, "Respect & commitment to customs"),
+                ("benevolence", "Benevolence", 0.86, "Welfare of close & in-group others"),
+                ("universalism", "Universalism", 0.83, "Welfare of all people & nature"),
+            ],
+        ),
+        (
+            "moral",
+            "Moral Foundations",
+            vec![
+                ("care", "Care / Harm", 0.88, "Protect from suffering, tend the vulnerable"),
+                ("fairness", "Fairness / Cheating", 0.84, "Proportional justice & reciprocity"),
+                ("loyalty", "Loyalty / Betrayal", 0.72, "Devotion to in-group & allegiance"),
+                ("authority", "Authority / Subversion", 0.64, "Deference to legitimate order"),
+                ("sanctity", "Sanctity / Degradation", 0.60, "Purity, elevation, contamination"),
+            ],
+        ),
+        (
+            "higher",
+            "Higher Nature",
+            vec![
+                ("creativity", "Creativity", 0.84, "Generative recombination of possibility"),
+                ("imagination", "Imagination", 0.82, "Simulation of absent & counterfactual"),
+                ("empathy", "Empathy", 0.87, "Affective & cognitive resonance with others"),
+                ("narrative_identity", "Narrative Identity", 0.80, "Self as an unfolding story"),
+                ("mortality_awareness", "Mortality Awareness", 0.74, "Finitude as meaning-source"),
+                ("meaning", "Meaning / Purpose", 0.85, "Coherent aim beyond bare function"),
+            ],
+        ),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -559,8 +742,14 @@ mod tests {
         let twin = HumanTwin::factory_default("Human-QA");
         assert_eq!(twin.systems.len(), 11);
         assert_eq!(twin.mind.len(), 10);
+        assert_eq!(twin.nature.constructs.len(), 38);
         assert!(twin.systems.iter().any(|s| s.id == BodySystemId::Nervous));
         assert!(twin.mind.iter().any(|m| m.id == MindModuleId::Language));
+        assert!(twin
+            .nature
+            .constructs
+            .iter()
+            .any(|c| c.group == "Instinct"));
     }
 
     #[test]
@@ -575,7 +764,10 @@ mod tests {
         let twin = HumanTwin::factory_default("Human-01");
         let frames = twin.emit_frames();
         let organs: usize = twin.systems.iter().map(|s| s.organs.len()).sum();
-        assert_eq!(frames.len(), organs + twin.mind.len());
+        assert_eq!(
+            frames.len(),
+            organs + twin.mind.len() + twin.nature.constructs.len()
+        );
 
         let decoded = Frame::decode(&frames[0]).unwrap();
         assert_eq!(decoded.protocol, PROTO_BIOMETRIC);
@@ -589,6 +781,15 @@ mod tests {
             .unwrap();
         let act = f32::from_le_bytes(cog.payload.clone().try_into().unwrap());
         assert!((0.0..=1.0).contains(&act));
+
+        let nat = twin
+            .emit_frames()
+            .iter()
+            .map(|f| Frame::decode(f).unwrap())
+            .find(|f| f.protocol == PROTO_NATURE)
+            .unwrap();
+        let w = f32::from_le_bytes(nat.payload.clone().try_into().unwrap());
+        assert!((0.0..=1.0).contains(&w));
     }
 
     #[test]

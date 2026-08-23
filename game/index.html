@@ -8,6 +8,7 @@
   :root {
     --bg: #0b0f17; --panel: #131a26; --ink: #e6edf3; --muted: #8b97a7;
     --accent: #4cc2ff; --gold: #ffcf4c; --good: #4cff9d; --bad: #ff6b6b;
+    --line: #223;
   }
   * { box-sizing: border-box; }
   body {
@@ -15,44 +16,115 @@
     font: 15px/1.5 -apple-system, Segoe UI, Roboto, sans-serif;
   }
   header {
-    padding: 18px 22px; border-bottom: 1px solid #223; display: flex;
+    padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex;
     align-items: baseline; gap: 12px; flex-wrap: wrap;
   }
   h1 { font-size: 20px; margin: 0; letter-spacing: .3px; }
   .tag { color: var(--muted); font-size: 13px; }
   main { max-width: 980px; margin: 0 auto; padding: 22px; }
   .panel {
-    background: var(--panel); border: 1px solid #223; border-radius: 12px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
     padding: 16px; margin-bottom: 18px;
   }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; }
-  .stat { background: #0e1420; border: 1px solid #223; border-radius: 10px; padding: 12px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; }
+  .stat { background: #0e1420; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
   .stat .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
-  .stat .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .stat .v { font-size: 22px; font-weight: 700; margin-top: 4px; transition: transform .15s; }
+  .stat.pulse .v { transform: scale(1.18); color: var(--gold); }
   .v.gold { color: var(--gold); } .v.accent { color: var(--accent); } .v.good { color: var(--good); }
+  .bar { height: 14px; background: #0e1420; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+  .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--good)); width: 0; transition: width .4s ease; }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  h2 { font-size: 16px; margin: 0 0 10px; }
+  .muted { color: var(--muted); }
+  .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#16344a; color:var(--accent); font-size:12px; }
+
+  /* action buttons */
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   button {
     background: #1c2738; color: var(--ink); border: 1px solid #2c3a52;
-    border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 14px;
+    border-radius: 8px; padding: 9px 12px; cursor: pointer; font-size: 14px;
+    transition: transform .08s ease, background .15s, border-color .15s;
   }
   button:hover { background: #243349; border-color: var(--accent); }
-  .bar { height: 14px; background: #0e1420; border: 1px solid #223; border-radius: 8px; overflow: hidden; margin-top: 8px; }
-  .bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--good)); width: 0; transition: width .4s ease; }
+  button:active { transform: translateY(1px) scale(.98); }
+  button .xp { color: var(--gold); font-weight: 700; margin-left: 4px; }
+  button .key { color: var(--muted); font-size: 11px; margin-left: 6px; border:1px solid #2c3a52; border-radius:4px; padding:0 4px; }
+  button.sim { background: #14324a; border-color: var(--accent); }
+  button.ghost { margin-left: auto; }
+
+  /* progression track */
   .track { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin-top: 10px; }
   .cell {
-    aspect-ratio: 1; border-radius: 5px; background: #0e1420; border: 1px solid #223;
+    aspect-ratio: 1; border-radius: 5px; background: #0e1420; border: 1px solid var(--line);
     display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted);
+    cursor: default; transition: transform .1s;
   }
   .cell.on { background: #16344a; border-color: var(--accent); color: var(--accent); }
   .cell.ms { background: #3a2f12; border-color: var(--gold); color: var(--gold); }
-  .reward { padding: 10px 12px; border-radius: 10px; margin-top: 10px; border: 1px solid #223; background: #0e1420; }
+  .cell.ms.on { box-shadow: 0 0 10px rgba(255,207,76,.5); }
+  .cell:hover { transform: scale(1.25); z-index: 2; }
+
+  .reward { padding: 10px 12px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--line); background: #0e1420; }
   .reward.prize { border-color: var(--gold); }
   .reward.privilege { border-color: var(--good); }
-  .muted { color: var(--muted); }
-  .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-  h2 { font-size: 16px; margin: 0 0 10px; }
   ul { margin: 8px 0 0; padding-left: 18px; } li { margin: 4px 0; }
-  .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#16344a; color:var(--accent); font-size:12px; }
+
+  /* combo */
+  .combo {
+    display: none; align-items: center; gap: 8px; margin-top: 10px;
+    background: #1a1206; border: 1px solid #5c4a16; border-radius: 10px; padding: 6px 10px;
+  }
+  .combo.show { display: flex; }
+  .combo .lbl { font-size: 11px; letter-spacing: 1px; color: var(--gold); }
+  .combo .x { font-weight: 800; color: var(--gold); font-size: 16px; }
+  .combo .cbar { flex: 1; height: 6px; background: #0e1420; border-radius: 4px; overflow: hidden; }
+  .combo .cbar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--bad)); width: 0; }
+
+  /* achievements */
+  .achgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 8px; }
+  .badge {
+    background: #0e1420; border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+    opacity: .4; filter: grayscale(1); transition: .3s;
+  }
+  .badge.on { opacity: 1; filter: none; border-color: var(--gold); box-shadow: 0 0 12px rgba(255,207,76,.25); }
+  .badge .ic { font-size: 20px; }
+  .badge .bn { font-size: 12.5px; font-weight: 700; margin-top: 4px; }
+  .badge .bd { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* nature */
+  .sys { margin: 12px 0; }
+  .sname { font-weight: 700; color: #fff; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sstat { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #0f2e20; color: var(--good); border: 1px solid #1c5436; }
+  .mind { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 8px; margin-top: 8px; }
+  .mcard { background: #0e1420; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .mcard .mn { font-weight: 600; color: #fff; font-size: 13.5px; }
+  .mcard .ml { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .ma { height: 6px; border-radius: 4px; background: #0a111c; margin-top: 6px; overflow: hidden; }
+  .ma > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--good)); }
+  .mind .mcard.online { animation: lit 1.4s ease; }
+  @keyframes lit { 0% { box-shadow: 0 0 0 rgba(76,255,157,0); } 40% { box-shadow: 0 0 16px rgba(76,255,157,.55); } 100% { box-shadow: 0 0 0 rgba(76,255,157,0);} }
+
+  /* toasts */
+  #toasts { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: 10px; max-width: 320px; }
+  .toast {
+    background: #111b2b; border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 10px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    transform: translateX(120%); opacity: 0; transition: transform .35s cubic-bezier(.2,.9,.3,1.3), opacity .35s;
+  }
+  .toast.show { transform: translateX(0); opacity: 1; }
+  .toast.level { border-left-color: var(--accent); }
+  .toast.prize { border-left-color: var(--gold); }
+  .toast.priv { border-left-color: var(--good); }
+  .toast.ach { border-left-color: var(--gold); }
+  .toast .tt { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  .toast .tm { font-size: 15px; font-weight: 700; margin-top: 2px; }
+  .toast .ts { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .toast.big { padding: 16px 18px; }
+  .toast.big .tm { font-size: 19px; color: var(--accent); }
+
+  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  kbd { background:#0e1420; border:1px solid #2c3a52; border-radius:4px; padding:0 5px; font-size:11px; }
 </style>
 </head>
 <body>
@@ -60,27 +132,42 @@
   <h1>New Body — R&D Contributor Quest</h1>
   <span class="tag">100 levels · automatic contribution tracking · HTML5</span>
 </header>
+<div id="toasts"></div>
 <main>
   <section class="panel">
     <div class="stats">
-      <div class="stat"><div class="k">Total XP</div><div class="v accent" id="xp">0</div></div>
-      <div class="stat"><div class="k">Level</div><div class="v gold" id="lvl">1</div></div>
-      <div class="stat"><div class="k">Tier</div><div class="v" id="tier">Initiate Researcher</div></div>
+      <div class="stat" id="statXp"><div class="k">Total XP</div><div class="v accent" id="xp">0</div></div>
+      <div class="stat" id="statLvl"><div class="k">Level</div><div class="v gold" id="lvl">1</div></div>
+      <div class="stat" id="statTier"><div class="k">Tier</div><div class="v" id="tier">Initiate Researcher</div></div>
       <div class="stat"><div class="k">Rank</div><div class="v" id="rank">Bronze</div></div>
       <div class="stat"><div class="k">To next level</div><div class="v good" id="next">100 XP</div></div>
     </div>
     <div class="bar"><span id="bar"></span></div>
-    <div class="actions">
-      <button data-xp="50">Merged PR (+50)</button>
-      <button data-xp="25">Tests added (+25)</button>
-      <button data-xp="20">Review approved (+20)</button>
-      <button data-xp="15">Docs improved (+15)</button>
-      <button data-xp="15">Issue triaged (+15)</button>
-      <button data-xp="10">Issue opened (+10)</button>
-      <button data-xp="30">Telemetry bug found (+30)</button>
-      <button data-xp="100">Release shipped (+100)</button>
-      <button id="reset" style="margin-left:auto">Reset</button>
+
+    <div class="actions" id="actions">
+      <button data-xp="50" title="Ships validated code to the surrogate control plane">Merged PR<span class="xp">+50</span><span class="key">1</span></button>
+      <button data-xp="25" title="Extends telemetry + twin validation coverage">Tests added<span class="xp">+25</span><span class="key">2</span></button>
+      <button data-xp="20" title="Sanity-checks a teammate's Cat-8 / PoE change">Review approved<span class="xp">+20</span><span class="key">3</span></button>
+      <button data-xp="15" title="Deepens the design doc & architecture">Docs improved<span class="xp">+15</span><span class="key">4</span></button>
+      <button data-xp="15" title="Routes a rig / telemetry report to the right node">Issue triaged<span class="xp">+15</span><span class="key">5</span></button>
+      <button data-xp="10" title="Surfaces a new R&D question">Issue opened<span class="xp">+10</span><span class="key">6</span></button>
+      <button data-xp="30" title="Catches an out-of-range vital / frame error">Telemetry bug found<span class="xp">+30</span><span class="key">7</span></button>
+      <button data-xp="100" title="Tags a new surrogate build">Release shipped<span class="xp">+100</span><span class="key">8</span></button>
+      <button class="sim" id="sim">⚡ Simulate a Contribution Day<span class="key">D</span></button>
+      <button class="ghost" id="reset">Reset<span class="key">R</span></button>
     </div>
+    <div class="combo" id="comboWrap">
+      <span class="lbl">COMBO</span><span class="x" id="comboX">×1</span>
+      <span class="cbar"><span id="comboBar"></span></span>
+    </div>
+    <div class="hint">Chain actions quickly to build a <b style="color:var(--gold)">combo</b> multiplier.
+      Keys <kbd>1</kbd>–<kbd>8</kbd> fire actions · <kbd>D</kbd> a day · <kbd>R</kbd> reset.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Next Reward</h2>
+    <div id="nextReward" class="muted">—</div>
+    <div class="bar"><span id="nextBar"></span></div>
   </section>
 
   <section class="panel">
@@ -99,6 +186,19 @@
     <h2 style="margin-top:14px">Unlocked Privileges</h2>
     <ul id="privs"></ul>
   </section>
+
+  <section class="panel">
+    <h2>Achievements</h2>
+    <div id="ach" class="achgrid"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Human Nature · encoded into the Artificial Nervous System</h2>
+    <p class="muted" style="margin-top:-4px">As you climb the quest, you encode human nature
+    into the surrogate's Cat-8 mesh. Each group comes <b>online</b> at a tier — Instinct is
+    the reflexive bedrock, present from the first contribution.</p>
+    <div id="nature"></div>
+  </section>
 </main>
 
 <script src="levels.js"></script>
@@ -108,6 +208,80 @@
   var LEVELS = window.LEVELS;
   var xp = 0;
 
+  // ---- playability state ----
+  var COMBO_MS = 2600, combo = 0, lastClick = 0, comboTimer = null;
+  var booted = false, prevLevel = 1, prevMilestone = 0;
+  var achStored = loadAch();
+
+  var ACH = {
+    first:     { ic: "🌱", n: "First Contribution", d: "Reach Level 2" },
+    journey:   { ic: "🚀", n: "Quarter Quest",       d: "Reach Level 25" },
+    half:      { ic: "⚙️", n: "Halfway Surrogate",   d: "Reach Level 50" },
+    nature:    { ic: "🧠", n: "Full Nature Online",  d: "Reach Level 80" },
+    architect: { ic: "👑", n: "Chief Architect",     d: "Reach Level 100" },
+    combo:     { ic: "🔥", n: "Combo Architect",     d: "Chain a ×3 combo" }
+  };
+  var ACH_ORDER = ["first", "journey", "half", "nature", "architect", "combo"];
+
+  // Human nature encoded into the artificial nervous system.
+  var NATURE = [
+    ["Instinct", 1, [["Fight",0.62],["Flight",0.70],["Freeze",0.55],["Seeking",0.88],
+      ["Attachment",0.82],["Aversion",0.75],["Nurturance",0.80],["Dominance",0.58],
+      ["Submission",0.60],["Play",0.66],["Homeostasis",0.90],["Curiosity",0.85]]],
+    ["Temperament (Big Five)", 20, [["Openness",0.82],["Conscientiousness",0.75],
+      ["Extraversion",0.60],["Agreeableness",0.77],["Neuroticism",0.35]]],
+    ["Value Orientation", 40, [["Self-Direction",0.85],["Stimulation",0.70],["Hedonism",0.65],
+      ["Achievement",0.78],["Power",0.55],["Security",0.80],["Conformity",0.60],
+      ["Tradition",0.58],["Benevolence",0.86],["Universalism",0.83]]],
+    ["Moral Foundations", 60, [["Care / Harm",0.88],["Fairness / Cheating",0.84],
+      ["Loyalty / Betrayal",0.72],["Authority / Subversion",0.64],["Sanctity / Degradation",0.60]]],
+    ["Higher Nature", 80, [["Creativity",0.84],["Imagination",0.82],["Empathy",0.87],
+      ["Narrative Identity",0.80],["Mortality Awareness",0.74],["Meaning / Purpose",0.85]]]
+  ];
+
+  function loadAch() {
+    try { return JSON.parse(localStorage.getItem("nb_ach") || "[]"); } catch (e) { return []; }
+  }
+  function saveAch() {
+    try { localStorage.setItem("nb_ach", JSON.stringify(achStored)); } catch (e) {}
+  }
+
+  // ---- toasts ----
+  function toast(kind, title, msg, big) {
+    var box = document.getElementById("toasts");
+    var el = document.createElement("div");
+    el.className = "toast " + kind + (big ? " big" : "");
+    el.innerHTML = "<div class='tt'>" + title + "</div><div class='tm'>" + msg + "</div>";
+    box.appendChild(el);
+    requestAnimationFrame(function () { el.classList.add("show"); });
+    setTimeout(function () {
+      el.classList.remove("show");
+      setTimeout(function () { el.remove(); }, 400);
+    }, big ? 3600 : 2800);
+  }
+
+  function renderNature(level) {
+    var box = document.getElementById("nature");
+    box.innerHTML = "";
+    NATURE.forEach(function (g) {
+      var online = level >= g[1];
+      var chips = g[2].map(function (c) {
+        return "<div class='mcard" + (online ? " online" : "") + "' style='" + (online ? "" : "opacity:.32") + "'>" +
+          "<div class='mn'>" + c[0] + "</div>" +
+          "<div class='ma'><span style='width:" + (c[1]*100) + "%'></span></div></div>";
+      }).join("");
+      var tag = g[0] === "Instinct"
+        ? " <span class='pill' style='background:#33280c;color:var(--gold);border-color:#5c4a16'>reflexive bedrock</span>"
+        : "";
+      var state = online
+        ? "<span class='pill' style='background:#0f2e20;color:var(--good);border-color:#1c5436'>ONLINE</span>"
+        : "<span class='pill'>online @ L" + g[1] + "</span>";
+      box.insertAdjacentHTML("beforeend",
+        "<div class='sys'><div class='sname'>" + g[0] + tag + " " + state +
+        "</div><div class='mind'>" + chips + "</div></div>");
+    });
+  }
+
   function levelFor(xp) {
     var lvl = 1;
     for (var i = 0; i < LEVELS.length; i++) {
@@ -115,6 +289,37 @@
       else break;
     }
     return LEVELS[lvl - 1];
+  }
+
+  function maxMilestone(level) {
+    var m = 0;
+    for (var i = 0; i < LEVELS.length; i++) {
+      var L = LEVELS[i];
+      if (L.level <= level && (L.reward.type === "prize" || L.reward.type === "privilege")) m = L.level;
+    }
+    return m;
+  }
+  function nextMilestone(level) {
+    for (var i = 0; i < LEVELS.length; i++) {
+      var L = LEVELS[i];
+      if (L.level > level && (L.reward.type === "prize" || L.reward.type === "privilege")) return L;
+    }
+    return null;
+  }
+  function earnedIds(level) {
+    var ids = [];
+    if (level >= 2) ids.push("first");
+    if (level >= 25) ids.push("journey");
+    if (level >= 50) ids.push("half");
+    if (level >= 80) ids.push("nature");
+    if (level >= 100) ids.push("architect");
+    return ids;
+  }
+  function unlockAch(id) {
+    if (achStored.indexOf(id) < 0) {
+      achStored.push(id); saveAch();
+      toast("ach", "Achievement unlocked", ACH[id].ic + " " + ACH[id].n);
+    }
   }
 
   function render() {
@@ -129,14 +334,28 @@
     document.getElementById("rank").textContent = cur.rank;
     document.getElementById("next").textContent =
       (cur.level < 100) ? (cur.xp_for_next - xpIn).toLocaleString() + " XP" : "MAX";
-    document.getElementById("bar").style.width =
-      Math.min(100, (xpIn / span) * 100) + "%";
+    document.getElementById("bar").style.width = Math.min(100, (xpIn / span) * 100) + "%";
 
     var r = cur.reward;
     var box = document.getElementById("curReward");
     box.className = "reward" + (r.type === "prize" ? " prize" : r.type === "privilege" ? " privilege" : "");
     var label = { badge: "Badge", prize: "Prize", privilege: "Privilege" }[r.type];
     box.innerHTML = "<b>" + label + ":</b> " + r.name;
+
+    // next reward progress
+    var nm = nextMilestone(cur.level);
+    if (nm) {
+      var base = cur.xp_to_reach, target = nm.xp_to_reach;
+      var pct = Math.max(0, Math.min(100, ((xp - base) / (target - base)) * 100));
+      var kind = nm.reward.type === "prize" ? "Prize" : "Privilege";
+      document.getElementById("nextReward").innerHTML =
+        "Next <b style='color:var(--gold)'>" + kind + "</b>: " + nm.reward.name +
+        " <span class='muted'>· Level " + nm.level + "</span>";
+      document.getElementById("nextBar").style.width = pct + "%";
+    } else {
+      document.getElementById("nextReward").innerHTML = "<b style='color:var(--gold)'>MAX</b> — all rewards claimed.";
+      document.getElementById("nextBar").style.width = "100%";
+    }
 
     // track
     var track = document.getElementById("track");
@@ -150,7 +369,7 @@
       track.appendChild(c);
     }
 
-    // prizes + privileges earned
+    // prizes + privileges
     var prizes = [], privs = [];
     for (var j = 0; j < cur.level; j++) {
       var e = LEVELS[j];
@@ -161,13 +380,119 @@
     document.getElementById("privs").innerHTML = privs.map(function (p) { return "<li>" + p + "</li>"; }).join("");
     document.getElementById("prizeCount").textContent = prizes.length + " / 5";
 
+    renderNature(cur.level);
+    renderAch();
+
+    // ---- announcements (skip on first paint) ----
+    if (!booted) {
+      booted = true;
+      prevLevel = cur.level;
+      prevMilestone = maxMilestone(cur.level);
+      earnedIds(cur.level).forEach(function (id) { if (achStored.indexOf(id) < 0) achStored.push(id); });
+      saveAch();
+      try { localStorage.setItem("nb_xp", String(xp)); } catch (e) {}
+      return;
+    }
+
+    if (cur.level > prevLevel) {
+      toast("level", "Level up!", "You reached Level " + cur.level + " — " + cur.tier, true);
+      pulse("statLvl");
+      prevLevel = cur.level;
+    }
+    var mMax = maxMilestone(cur.level);
+    for (var m = prevMilestone + 1; m <= mMax; m++) {
+      var mL = LEVELS[m - 1];
+      if (mL.reward.type === "prize") toast("prize", "Prize unlocked", mL.reward.name);
+      else if (mL.reward.type === "privilege") toast("priv", "Privilege granted", mL.reward.name);
+    }
+    prevMilestone = mMax;
+
+    earnedIds(cur.level).forEach(function (id) { unlockAch(id); });
+
     try { localStorage.setItem("nb_xp", String(xp)); } catch (e) {}
   }
 
-  document.querySelectorAll("button[data-xp]").forEach(function (b) {
-    b.addEventListener("click", function () { xp += parseInt(b.getAttribute("data-xp"), 10); render(); });
+  function pulse(id) {
+    var el = document.getElementById(id);
+    el.classList.add("pulse");
+    setTimeout(function () { el.classList.remove("pulse"); }, 220);
+  }
+
+  function renderAch() {
+    var box = document.getElementById("ach");
+    box.innerHTML = ACH_ORDER.map(function (id) {
+      var a = ACH[id], on = achStored.indexOf(id) >= 0;
+      return "<div class='badge" + (on ? " on" : "") + "'><div class='ic'>" + a.ic +
+        "</div><div class='bn'>" + a.n + "</div><div class='bd'>" + a.d + "</div></div>";
+    }).join("");
+  }
+
+  // ---- combo + gain ----
+  function showCombo() {
+    var wrap = document.getElementById("comboWrap");
+    var x = document.getElementById("comboX");
+    var bar = document.getElementById("comboBar");
+    if (combo <= 1) { wrap.classList.remove("show"); x.textContent = "×1"; bar.style.width = "0%"; return; }
+    wrap.classList.add("show");
+    x.textContent = "×" + combo;
+    bar.style.transition = "none"; bar.style.width = "100%";
+    void bar.offsetWidth;
+    bar.style.transition = "width " + COMBO_MS + "ms linear";
+    bar.style.width = "0%";
+  }
+
+  function gain(base, label) {
+    var now = Date.now();
+    combo = (now - lastClick < COMBO_MS) ? Math.min(combo + 1, 99) : 1;
+    lastClick = now;
+    var bonus = Math.floor(base * (combo - 1) * 0.15);
+    xp += base + bonus;
+    if (combo >= 3) unlockAch("combo");
+    showCombo();
+    if (comboTimer) clearTimeout(comboTimer);
+    comboTimer = setTimeout(function () { combo = 0; showCombo(); }, COMBO_MS);
+    render();
+  }
+
+  document.querySelectorAll("#actions button[data-xp]").forEach(function (b, i) {
+    b.addEventListener("click", function () { gain(parseInt(b.getAttribute("data-xp"), 10), b.textContent); });
   });
-  document.getElementById("reset").addEventListener("click", function () { xp = 0; render(); });
+  document.getElementById("reset").addEventListener("click", function () {
+    xp = 0; combo = 0; showCombo();
+    prevLevel = 1; prevMilestone = 0;
+    render();
+  });
+
+  // ---- simulate a contribution day (chains a streak) ----
+  var simming = false;
+  document.getElementById("sim").addEventListener("click", function () {
+    if (simming) return;
+    simming = true;
+    var btn = this; btn.disabled = true; btn.textContent = "⚡ Running a contribution day…";
+    var seq = [10, 15, 25, 20, 30, 50]; // opened · triaged · tests · review · bug · PR
+    var k = 0;
+    (function step() {
+      if (k >= seq.length) {
+        btn.disabled = false; btn.textContent = "⚡ Simulate a Contribution Day";
+        simming = false;
+        toast("level", "Day complete", "+" + seq.reduce(function (a, b) { return a + b; }, 0) + " base XP earned");
+        return;
+      }
+      var node = document.querySelector('#actions button[data-xp="' + seq[k] + '"]');
+      if (node) node.click();
+      k++;
+      setTimeout(step, 230);
+    })();
+  });
+
+  // ---- keyboard shortcuts ----
+  document.addEventListener("keydown", function (e) {
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    var map = { "1": 50, "2": 25, "3": 20, "4": 15, "5": 15, "6": 10, "7": 30, "8": 100 };
+    if (map[e.key] != null) { var n = document.querySelector('#actions button[data-xp="' + map[e.key] + '"]'); if (n) n.click(); }
+    else if (e.key === "d" || e.key === "D") document.getElementById("sim").click();
+    else if (e.key === "r" || e.key === "R") document.getElementById("reset").click();
+  });
 
   try { xp = parseInt(localStorage.getItem("nb_xp") || "0", 10) || 0; } catch (e) {}
   render();
